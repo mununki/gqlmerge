@@ -6,7 +6,7 @@ import (
 )
 
 func TestGetSchema(t *testing.T) {
-	rel, err := filepath.Rel("lib", "schema")
+	rel, err := filepath.Rel("lib", "./schema")
 	if err != nil {
 		t.Error(err)
 	}
