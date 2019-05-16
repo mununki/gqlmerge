@@ -1,0 +1,6 @@
+schema/
+gqlmerge
+
+*.gql
+*.graphql
+*.gz
