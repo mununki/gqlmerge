@@ -1,4 +1,4 @@
-package main
+package lib
 
 import (
 	"fmt"
@@ -6,8 +6,9 @@ import (
 	"strings"
 )
 
+// Command for gqlmerge
 type Command struct {
-	args []string
+	Args []string
 }
 
 type Options struct {
@@ -39,23 +40,23 @@ func (c *Command) Check() error {
 		Version:          "v0.1.0",
 	}
 	// show the version
-	if strings.HasPrefix(c.args[1], "-v") {
+	if strings.HasPrefix(c.Args[1], "-v") {
 		return fmt.Errorf(options.Version)
-	} else if strings.HasPrefix(c.args[1], "-h") {
+	} else if strings.HasPrefix(c.Args[1], "-h") {
 		// show the version
 		return fmt.Errorf(options.Help)
 	}
 
 	// check the number of args
-	if len(c.args) <= 1 {
+	if len(c.Args) <= 1 {
 		return fmt.Errorf(options.NotEnoughArgs)
-	} else if len(c.args) == 2 {
+	} else if len(c.Args) == 2 {
 		return fmt.Errorf(options.OutputFileNeeded)
 	}
 
 	// check first arg, path is existing
-	if _, err := os.Stat(c.args[1]); os.IsNotExist(err) {
-		return fmt.Errorf(options.PathNotExist, c.args[1])
+	if _, err := os.Stat(c.Args[1]); os.IsNotExist(err) {
+		return fmt.Errorf(options.PathNotExist, c.Args[1])
 	}
 
 	return nil

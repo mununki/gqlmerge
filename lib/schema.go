@@ -1,6 +1,7 @@
-package main
+package lib
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/gobuffalo/packr/v2"
@@ -8,7 +9,12 @@ import (
 
 // GetSchema is to parse ./schema/**/*.graphql
 func GetSchema(path string) string {
-	box := packr.New("schema", path)
+	rel, err := filepath.Rel("lib", path)
+	if err != nil {
+		panic(err)
+	}
+
+	box := packr.New("schema", rel)
 	var schema strings.Builder
 
 	box.Walk(func(p string, f packr.File) error {

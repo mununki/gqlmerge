@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	gql "github.com/mattdamon108/gqlmerge/lib"
 )
 
 func main() {
-	cmd := Command{args: os.Args}
+	cmd := gql.Command{Args: os.Args}
 	if err := cmd.Check(); err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
 
-	s := GetSchema(os.Args[1])
-	l := NewLexer(s)
+	s := gql.GetSchema(os.Args[1])
+	l := gql.NewLexer(s)
 
-	sc := Schema{}
+	sc := gql.Schema{}
 	sc.ParseSchema(l)
 	sc.UniqueMutation()
 	sc.UniqueQuery()
@@ -27,7 +29,7 @@ func main() {
 	sc.UniqueUnion()
 	sc.UniqueInput()
 
-	ms := MergedSchema{}
+	ms := gql.MergedSchema{}
 	ss := ms.StitchSchema(&sc)
 
 	bs := []byte(ss)
