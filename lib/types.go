@@ -1,6 +1,7 @@
-package main
+package lib
 
 type Schema struct {
+	Files         []string
 	Mutations     []*Mutation
 	Queries       []*Query
 	Subscriptions []*Subscription
