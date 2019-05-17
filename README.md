@@ -5,8 +5,7 @@ A tool to merge and stitch modularized GraphQL files into one schema file
 ## Stack
 
 - Built in Go
-- Dependencies
-  - Packr
+- No 3rd party dependency
 
 ## Features
 
