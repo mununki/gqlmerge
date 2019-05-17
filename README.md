@@ -67,7 +67,7 @@ type User {
 # CheckIfExists.graphql
 
 type Query {
-  checkIfExists(userId: ID!): UserResponse!
+  checkIfExists(userId: ID!): CheckIfExistsResponse!
 }
 
 type CheckIfExistsResponse {
@@ -95,7 +95,7 @@ _After_
 ```graphql
 type Query {
   getMyProfile: UserResponse!
-  checkIfExists(userId: ID!): UserResponse!
+  checkIfExists(userId: ID!): CheckIfExistsResponse!
 }
 
 type UserResponse {
