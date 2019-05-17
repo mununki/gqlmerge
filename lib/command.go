@@ -2,7 +2,7 @@ package lib
 
 import (
 	"fmt"
-	"os"
+	// "os"
 	"strings"
 )
 
@@ -21,23 +21,24 @@ type Options struct {
 
 func (c *Command) Check() error {
 	options := Options{
-		Help: `gqlmerge is the tool to merge & stitch *.graphql files and generate a Graphql schema
+		Help: `👋 'gqlmerge' is the tool to merge & stitch *.graphql files and generate a Graphql schema
+Author : Woonki Moon <woonki.moon@gmail.com>
 
-	Usage:	gqlmerge [PATH] [OUTPUT.graphql]
+Usage:	gqlmerge [PATH] [OUTPUT.graphql]
 
-	e.g.
+e.g.
 
-		gqlmerge ./schema schema.graphql
+	gqlmerge ./schema schema.graphql
 
-	Options:
+Options:
 
-		-v	: check the version
-		-h	: help
+	-v	: check the version
+	-h	: help
 `,
-		PathNotExist:     "Path '%s' does not Exist",
-		NotEnoughArgs:    "Not enough arguments",
-		OutputFileNeeded: "Output file argument is needed",
-		Version:          "v0.1.0",
+		PathNotExist:     "❌ Path '%s' does not Exist",
+		NotEnoughArgs:    "❌ Not enough arguments",
+		OutputFileNeeded: "❌ Output file argument is needed",
+		Version:          "v0.1.1",
 	}
 	// show the version
 	if strings.HasPrefix(c.Args[1], "-v") {
@@ -55,7 +56,8 @@ func (c *Command) Check() error {
 	}
 
 	// check first arg, path is existing
-	if _, err := os.Stat(c.Args[1]); os.IsNotExist(err) {
+	// if _, err := os.Stat(c.Args[1]); os.IsNotExist(err) {
+	if false {
 		return fmt.Errorf(options.PathNotExist, c.Args[1])
 	}
 
