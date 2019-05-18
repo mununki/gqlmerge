@@ -1,7 +1,7 @@
 package lib
 
 import (
-	// "fmt"
+	"sync"
 	"text/scanner"
 )
 
@@ -381,7 +381,8 @@ func (s *Schema) ParseSchema(l *Lexer) {
 	}
 }
 
-func (s *Schema) UniqueMutation() {
+func (s *Schema) UniqueMutation(wg *sync.WaitGroup) {
+	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.Mutations))
 	for _, v := range s.Mutations {
@@ -395,7 +396,8 @@ func (s *Schema) UniqueMutation() {
 	s.Mutations = s.Mutations[:j]
 }
 
-func (s *Schema) UniqueQuery() {
+func (s *Schema) UniqueQuery(wg *sync.WaitGroup) {
+	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.Queries))
 	for _, v := range s.Queries {
@@ -409,7 +411,8 @@ func (s *Schema) UniqueQuery() {
 	s.Queries = s.Queries[:j]
 }
 
-func (s *Schema) UniqueTypeName() {
+func (s *Schema) UniqueTypeName(wg *sync.WaitGroup) {
+	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.TypeNames))
 	for _, v := range s.TypeNames {
@@ -423,7 +426,8 @@ func (s *Schema) UniqueTypeName() {
 	s.TypeNames = s.TypeNames[:j]
 }
 
-func (s *Schema) UniqueScalar() {
+func (s *Schema) UniqueScalar(wg *sync.WaitGroup) {
+	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.Scalars))
 	for _, v := range s.Scalars {
@@ -437,7 +441,8 @@ func (s *Schema) UniqueScalar() {
 	s.Scalars = s.Scalars[:j]
 }
 
-func (s *Schema) UniqueEnum() {
+func (s *Schema) UniqueEnum(wg *sync.WaitGroup) {
+	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.Enums))
 	for _, v := range s.Enums {
@@ -451,7 +456,8 @@ func (s *Schema) UniqueEnum() {
 	s.Enums = s.Enums[:j]
 }
 
-func (s *Schema) UniqueInterface() {
+func (s *Schema) UniqueInterface(wg *sync.WaitGroup) {
+	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.Interfaces))
 	for _, v := range s.Interfaces {
@@ -465,7 +471,8 @@ func (s *Schema) UniqueInterface() {
 	s.Interfaces = s.Interfaces[:j]
 }
 
-func (s *Schema) UniqueUnion() {
+func (s *Schema) UniqueUnion(wg *sync.WaitGroup) {
+	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.Unions))
 	for _, v := range s.Unions {
@@ -479,7 +486,8 @@ func (s *Schema) UniqueUnion() {
 	s.Unions = s.Unions[:j]
 }
 
-func (s *Schema) UniqueInput() {
+func (s *Schema) UniqueInput(wg *sync.WaitGroup) {
+	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.Inputs))
 	for _, v := range s.Inputs {

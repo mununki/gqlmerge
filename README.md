@@ -13,7 +13,9 @@ A tool to merge and stitch modularized GraphQL files into one schema file
 - Find `*.graphql` files in recursive way
 - CLI to use in shell or script
 
-## How to install
+## How to use
+
+### Install to use in CLI
 
 Homebrew
 
@@ -35,6 +37,21 @@ $ git clone https://github.com/mattdamon108/gqlmerge
 $ cd gqlmerge
 
 $ go install
+```
+
+### Use as a go module
+
+Import gqlmerge module
+
+```go
+import gql "github.com/mattdamon108/gqlmerge/lib"
+
+func main(){
+	// ...
+
+	// Arg the path should be an absolute path
+	schema := gql.Merge(path)
+}
 ```
 
 ## What for?
