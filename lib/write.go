@@ -16,11 +16,11 @@ func (ms *MergedSchema) addIndent(n int) {
 
 func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	ms.WriteString("schema {\n")
-	if len(s.Mutations) > 0 {
+	if len(s.Queries) > 0 {
 		ms.addIndent(2)
 		ms.WriteString("query: Query\n")
 	}
-	if len(s.Queries) > 0 {
+	if len(s.Mutations) > 0 {
 		ms.addIndent(2)
 		ms.WriteString("mutation: Mutation\n")
 	}
