@@ -45,7 +45,9 @@ func (sc *Schema) GetSchema(path string) {
 		panic(err)
 	}
 
-	fmt.Printf("🎉 Total %d *.graphql files found!\n", len(sc.Files))
+	if len(sc.Files) > 0 {
+		fmt.Printf("🎉 Total %d *.graphql files found!\n", len(sc.Files))
+	}
 
 	return
 }
