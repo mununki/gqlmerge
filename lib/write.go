@@ -30,55 +30,6 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	}
 	ms.WriteString("}\n")
 
-	ms.WriteString(`type Mutation {
-`)
-	for _, m := range s.Mutations {
-		ms.addIndent(2)
-		ms.WriteString(m.Name)
-		if l := len(m.Args); l > 0 {
-			ms.WriteString("(")
-			if l > 2 {
-				ms.WriteString("\n")
-			}
-			for i, a := range m.Args {
-				if l > 2 {
-					ms.addIndent(4)
-				}
-				ms.WriteString(a.Param + ": " + a.Type)
-				if !a.Null {
-					ms.WriteString("!")
-				}
-				if l <= 2 && i != l-1 {
-					ms.WriteString(", ")
-				}
-				if l > 2 && i != l-1 {
-					ms.WriteString("\n")
-				}
-			}
-			if l > 2 {
-				ms.WriteString("\n")
-				ms.addIndent(2)
-			}
-			ms.WriteString(")")
-		}
-		ms.WriteString(": ")
-		if m.Resp.IsList {
-			ms.WriteString("[")
-		}
-		ms.WriteString(m.Resp.Name)
-		if !m.Resp.Null {
-			ms.WriteString("!")
-		}
-		if m.Resp.IsList {
-			ms.WriteString("]")
-		}
-		if m.Resp.IsList && !m.Resp.IsListNull {
-			ms.WriteString("!")
-		}
-		ms.WriteString("\n")
-	}
-	ms.WriteString("}\n")
-
 	ms.WriteString(`type Query {
 `)
 	for _, q := range s.Queries {
@@ -122,6 +73,55 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 			ms.WriteString("]")
 		}
 		if q.Resp.IsList && !q.Resp.IsListNull {
+			ms.WriteString("!")
+		}
+		ms.WriteString("\n")
+	}
+	ms.WriteString("}\n")
+
+	ms.WriteString(`type Mutation {
+`)
+	for _, m := range s.Mutations {
+		ms.addIndent(2)
+		ms.WriteString(m.Name)
+		if l := len(m.Args); l > 0 {
+			ms.WriteString("(")
+			if l > 2 {
+				ms.WriteString("\n")
+			}
+			for i, a := range m.Args {
+				if l > 2 {
+					ms.addIndent(4)
+				}
+				ms.WriteString(a.Param + ": " + a.Type)
+				if !a.Null {
+					ms.WriteString("!")
+				}
+				if l <= 2 && i != l-1 {
+					ms.WriteString(", ")
+				}
+				if l > 2 && i != l-1 {
+					ms.WriteString("\n")
+				}
+			}
+			if l > 2 {
+				ms.WriteString("\n")
+				ms.addIndent(2)
+			}
+			ms.WriteString(")")
+		}
+		ms.WriteString(": ")
+		if m.Resp.IsList {
+			ms.WriteString("[")
+		}
+		ms.WriteString(m.Resp.Name)
+		if !m.Resp.Null {
+			ms.WriteString("!")
+		}
+		if m.Resp.IsList {
+			ms.WriteString("]")
+		}
+		if m.Resp.IsList && !m.Resp.IsListNull {
 			ms.WriteString("!")
 		}
 		ms.WriteString("\n")
