@@ -1,7 +1,11 @@
 package lib
 
+import (
+	"os"
+)
+
 type Schema struct {
-	Files         []string
+	Files         []*os.File
 	Mutations     []*Mutation
 	Queries       []*Query
 	Subscriptions []*Subscription
