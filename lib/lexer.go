@@ -77,7 +77,7 @@ func (l *Lexer) ConsumeToken(expected rune) {
 	if l.next != expected {
 		msg := fmt.Sprintf(
 			// doesn't quote expected because scanner.TokenString
-			// do in itself
+			// do it itself
 			`%s:%d:%d: unexpected "%s", expected %s`,
 			l.sc.Filename,
 			l.sc.Line,
