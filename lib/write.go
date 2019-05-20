@@ -100,6 +100,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		if q.Resp.IsList && !q.Resp.IsListNull {
 			ms.WriteString("!")
 		}
+
+		if q.Directive != nil {
+			ms.WriteString(" @" + q.Directive.string)
+		}
+
 		ms.WriteString("\n")
 	}
 	ms.WriteString("}\n")
@@ -139,6 +144,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		if m.Resp.IsList && !m.Resp.IsListNull {
 			ms.WriteString("!")
 		}
+
+		if m.Directive != nil {
+			ms.WriteString(" @" + m.Directive.string)
+		}
+
 		ms.WriteString("\n")
 	}
 	ms.WriteString("}\n")
@@ -178,6 +188,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		if c.Resp.IsList && !c.Resp.IsListNull {
 			ms.WriteString("!")
 		}
+
+		if c.Directive != nil {
+			ms.WriteString(" @" + c.Directive.string)
+		}
+
 		ms.WriteString("\n")
 	}
 	ms.WriteString("}\n")
@@ -222,6 +237,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 			if p.IsList && !p.IsListNull {
 				ms.WriteString("!")
 			}
+
+			if p.Directive != nil {
+				ms.WriteString(" @" + p.Directive.string)
+			}
+
 			ms.WriteString("\n")
 		}
 		ms.WriteString("}")
@@ -288,6 +308,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 			if p.IsList && !p.IsListNull {
 				ms.WriteString("!")
 			}
+
+			if p.Directive != nil {
+				ms.WriteString(" @" + p.Directive.string)
+			}
+
 			ms.WriteString("\n")
 		}
 		ms.WriteString("}")
@@ -327,6 +352,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 			if p.IsList && !p.IsListNull {
 				ms.WriteString("!")
 			}
+
+			if p.Directive != nil {
+				ms.WriteString(" @" + p.Directive.string)
+			}
+
 			ms.WriteString("\n")
 		}
 		ms.WriteString("}")

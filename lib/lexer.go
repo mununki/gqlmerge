@@ -1,14 +1,16 @@
 package lib
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"text/scanner"
 )
 
 type Lexer struct {
-	sc   *scanner.Scanner
-	next rune
+	sc     *scanner.Scanner
+	next   rune
+	buffer bytes.Buffer
 }
 
 func NewLexer(file *os.File) *Lexer {
@@ -23,6 +25,7 @@ func NewLexer(file *os.File) *Lexer {
 }
 
 func (l *Lexer) ConsumeWhitespace() {
+	l.buffer.Reset()
 	for {
 		l.next = l.sc.Scan()
 
@@ -45,7 +48,23 @@ func (l *Lexer) ConsumeComment() {
 		if next == '\r' || next == '\n' || next == scanner.EOF {
 			break
 		}
+		l.buffer.WriteRune(next)
 	}
+}
+
+func (l *Lexer) ConsumeDirective() {
+	l.buffer.WriteString(l.sc.TokenText())
+	for {
+		next := l.sc.Next()
+		if next == '\r' || next == '\n' || next == scanner.EOF {
+			break
+		}
+		l.buffer.WriteRune(next)
+	}
+}
+
+func (l *Lexer) GetBuffer() string {
+	return l.buffer.String()
 }
 
 func (l *Lexer) ConsumeIdent() string {

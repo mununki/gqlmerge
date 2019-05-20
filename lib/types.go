@@ -18,21 +18,24 @@ type Schema struct {
 }
 
 type Mutation struct {
-	Name string
-	Args []*Arg
-	Resp Resp
+	Name      string
+	Args      []*Arg
+	Resp      Resp
+	Directive *Directive
 }
 
 type Query struct {
-	Name string
-	Args []*Arg
-	Resp Resp
+	Name      string
+	Args      []*Arg
+	Resp      Resp
+	Directive *Directive
 }
 
 type Subscription struct {
-	Name string
-	Args []*Arg
-	Resp Resp
+	Name      string
+	Args      []*Arg
+	Resp      Resp
+	Directive *Directive
 }
 
 type TypeName struct {
@@ -65,6 +68,7 @@ type Prop struct {
 	Null       bool
 	IsList     bool
 	IsListNull bool
+	Directive  *Directive
 }
 
 type Scalar struct {
@@ -89,4 +93,8 @@ type Union struct {
 type Input struct {
 	Name  string
 	Props []*Prop
+}
+
+type Directive struct {
+	string
 }

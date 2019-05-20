@@ -81,6 +81,15 @@ func (s *Schema) ParseSchema(l *Lexer) {
 						p.Null = true
 					}
 				}
+
+				if l.Peek() == '@' {
+					l.ConsumeToken('@')
+					l.ConsumeDirective()
+					d := Directive{l.GetBuffer()}
+					l.ConsumeWhitespace()
+					p.Directive = &d
+				}
+
 				i.Props = append(i.Props, &p)
 			}
 
@@ -140,6 +149,15 @@ func (s *Schema) ParseSchema(l *Lexer) {
 						p.Null = true
 					}
 				}
+
+				if l.Peek() == '@' {
+					l.ConsumeToken('@')
+					l.ConsumeDirective()
+					d := Directive{l.GetBuffer()}
+					l.ConsumeWhitespace()
+					p.Directive = &d
+				}
+
 				i.Props = append(i.Props, &p)
 			}
 
@@ -190,6 +208,15 @@ func (s *Schema) ParseSchema(l *Lexer) {
 						}
 					}
 					q.Resp = r
+
+					if l.Peek() == '@' {
+						l.ConsumeToken('@')
+						l.ConsumeDirective()
+						d := Directive{l.GetBuffer()}
+						l.ConsumeWhitespace()
+						q.Directive = &d
+					}
+
 					s.Queries = append(s.Queries, &q)
 				}
 				l.ConsumeToken('}')
@@ -233,7 +260,17 @@ func (s *Schema) ParseSchema(l *Lexer) {
 							r.Null = true
 						}
 					}
+
 					m.Resp = r
+
+					if l.Peek() == '@' {
+						l.ConsumeToken('@')
+						l.ConsumeDirective()
+						d := Directive{l.GetBuffer()}
+						l.ConsumeWhitespace()
+						m.Directive = &d
+					}
+
 					s.Mutations = append(s.Mutations, &m)
 				}
 				l.ConsumeToken('}')
@@ -278,6 +315,15 @@ func (s *Schema) ParseSchema(l *Lexer) {
 						}
 					}
 					c.Resp = r
+
+					if l.Peek() == '@' {
+						l.ConsumeToken('@')
+						l.ConsumeDirective()
+						d := Directive{l.GetBuffer()}
+						l.ConsumeWhitespace()
+						c.Directive = &d
+					}
+
 					s.Subscriptions = append(s.Subscriptions, &c)
 				}
 				l.ConsumeToken('}')
@@ -334,6 +380,15 @@ func (s *Schema) ParseSchema(l *Lexer) {
 							p.Null = true
 						}
 					}
+
+					if l.Peek() == '@' {
+						l.ConsumeToken('@')
+						l.ConsumeDirective()
+						d := Directive{l.GetBuffer()}
+						l.ConsumeWhitespace()
+						p.Directive = &d
+					}
+
 					t.Props = append(t.Props, &p)
 				}
 
