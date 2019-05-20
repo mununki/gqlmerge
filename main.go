@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	gql "github.com/mattdamon108/gqlmerge/lib"
 )
@@ -17,13 +16,8 @@ func main() {
 	}
 
 	// TODO : needs to improve to work with a relative path.
-	abs, err := filepath.Abs(os.Args[1])
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
 
-	ss := gql.Merge(abs)
+	ss := gql.Merge(os.Args[1])
 
 	if ss != nil {
 		bs := []byte(*ss)

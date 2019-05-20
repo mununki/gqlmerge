@@ -1,14 +1,21 @@
 package lib
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 )
 
 func Merge(path string) *string {
-
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
 	sc := Schema{}
 	// at this moment, path should be an absolute path
-	sc.GetSchema(path)
+	sc.GetSchema(abs)
 
 	if len(sc.Files) == 0 {
 		return nil

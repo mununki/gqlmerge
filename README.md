@@ -49,7 +49,7 @@ import gql "github.com/mattdamon108/gqlmerge/lib"
 func main(){
 	// ...
 
-	// Arg the path should be an absolute path
+	// path should be a relative path
 	schema := gql.Merge(path)
 }
 ```
