@@ -32,7 +32,7 @@ func (sc *Schema) GetSchema(path string) {
 		file, err := os.Open(p)
 		if err != nil {
 			fmt.Printf("[Error] There is an error to open %s", p)
-			return nil
+			return err
 		}
 
 		// TODO: split and get a only filename and print it to user
@@ -48,6 +48,4 @@ func (sc *Schema) GetSchema(path string) {
 	if len(sc.Files) > 0 {
 		fmt.Printf("🎉 Total %d *.graphql files found!\n", len(sc.Files))
 	}
-
-	return
 }
