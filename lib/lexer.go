@@ -2,7 +2,7 @@ package lib
 
 import (
 	"fmt"
-	"strings"
+	"os"
 	"text/scanner"
 )
 
@@ -11,12 +11,13 @@ type Lexer struct {
 	next rune
 }
 
-func NewLexer(s string) *Lexer {
+func NewLexer(file *os.File) *Lexer {
 	sc := scanner.Scanner{
 		Mode: scanner.ScanIdents | scanner.ScanInts | scanner.ScanFloats | scanner.ScanStrings,
 	}
 
-	sc.Init(strings.NewReader(s))
+	sc.Init(file)
+	sc.Filename = file.Name()
 
 	return &Lexer{sc: &sc}
 }
@@ -55,8 +56,17 @@ func (l *Lexer) ConsumeIdent() string {
 
 func (l *Lexer) ConsumeToken(expected rune) {
 	if l.next != expected {
-		fmt.Printf("syntax error: unexpected %s, expected %s", l.sc.TokenText(), scanner.TokenString(expected))
-		panic("syntax error found")
+		msg := fmt.Sprintf(
+			// doesn't quote expected because scanner.TokenString
+			// do in ifself
+			`%s:%d:%d: unexpected "%s", expected %s`,
+			l.sc.Filename,
+			l.sc.Line,
+			l.sc.Column,
+			l.sc.TokenText(),
+			scanner.TokenString(expected),
+		)
+		panic(msg)
 	}
 	l.ConsumeWhitespace()
 }
