@@ -45,6 +45,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 					ms.addIndent(4)
 				}
 				ms.WriteString(a.Param + ": " + a.Type)
+
+				if a.TypeExt != nil {
+					ms.WriteString(" = " + *a.TypeExt)
+				}
+
 				if !a.Null {
 					ms.WriteString("!")
 				}
@@ -94,6 +99,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 					ms.addIndent(4)
 				}
 				ms.WriteString(a.Param + ": " + a.Type)
+
+				if a.TypeExt != nil {
+					ms.WriteString(" = " + *a.TypeExt)
+				}
+
 				if !a.Null {
 					ms.WriteString("!")
 				}
@@ -143,6 +153,11 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 					ms.addIndent(4)
 				}
 				ms.WriteString(a.Param + ": " + a.Type)
+
+				if a.TypeExt != nil {
+					ms.WriteString(" = " + *a.TypeExt)
+				}
+
 				if !a.Null {
 					ms.WriteString("!")
 				}
@@ -186,7 +201,41 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.WriteString(" {\n")
 		for _, p := range t.Props {
 			ms.addIndent(2)
-			ms.WriteString(p.Name + ": ")
+			ms.WriteString(p.Name)
+
+			if l := len(p.Args); l > 0 {
+				ms.WriteString("(")
+				if l > 2 {
+					ms.WriteString("\n")
+				}
+				for i, a := range p.Args {
+					if l > 2 {
+						ms.addIndent(4)
+					}
+					ms.WriteString(a.Param + ": " + a.Type)
+
+					if a.TypeExt != nil {
+						ms.WriteString(" = " + *a.TypeExt)
+					}
+
+					if !a.Null {
+						ms.WriteString("!")
+					}
+					if l <= 2 && i != l-1 {
+						ms.WriteString(", ")
+					}
+					if l > 2 && i != l-1 {
+						ms.WriteString("\n")
+					}
+				}
+				if l > 2 {
+					ms.WriteString("\n")
+					ms.addIndent(2)
+				}
+				ms.WriteString(")")
+			}
+
+			ms.WriteString(": ")
 			if p.IsList {
 				ms.WriteString("[")
 			}

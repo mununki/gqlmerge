@@ -147,6 +147,75 @@ func (s *Schema) ParseSchema(l *Lexer) {
 
 			switch x := l.ConsumeIdent(); x {
 
+			case "Query":
+				l.ConsumeToken('{')
+
+				for l.Peek() != '}' {
+					q := Query{}
+					q.Name = l.ConsumeIdent()
+
+					if l.Peek() == '(' {
+
+						l.ConsumeToken('(')
+						for l.Peek() != ')' {
+							arg := Arg{}
+							arg.Param = l.ConsumeIdent()
+							l.ConsumeToken(':')
+							arg.Type = l.ConsumeIdent()
+
+							if l.Peek() == '=' {
+								l.ConsumeToken('=')
+								ext := l.ConsumeIdent()
+								arg.TypeExt = &ext
+							}
+
+							if x := l.sc.TokenText(); x == "!" {
+								arg.Null = false
+								l.ConsumeToken('!')
+							} else {
+								arg.Null = true
+							}
+
+							q.Args = append(q.Args, &arg)
+						}
+						l.ConsumeToken(')')
+					}
+
+					l.ConsumeToken(':')
+					r := Resp{}
+					if l.Peek() == '[' {
+						r.IsList = true
+						l.ConsumeToken('[')
+						r.Name = l.ConsumeIdent()
+						if x := l.sc.TokenText(); x == "!" {
+							r.Null = false
+							l.ConsumeToken('!')
+						} else {
+							r.Null = true
+						}
+						l.ConsumeToken(']')
+						if x := l.sc.TokenText(); x == "!" {
+							r.IsListNull = false
+							l.ConsumeToken('!')
+						} else {
+							r.IsListNull = true
+						}
+					} else {
+						r.IsList = false
+						r.IsListNull = false
+						r.Name = l.ConsumeIdent()
+						if x := l.sc.TokenText(); x == "!" {
+							r.Null = false
+							l.ConsumeToken('!')
+						} else {
+							r.Null = true
+						}
+					}
+					q.Resp = r
+					s.Queries = append(s.Queries, &q)
+				}
+				l.ConsumeToken('}')
+
 			case "Mutation":
 				l.ConsumeToken('{')
 
@@ -159,6 +228,13 @@ func (s *Schema) ParseSchema(l *Lexer) {
 						arg.Param = l.ConsumeIdent()
 						l.ConsumeToken(':')
 						arg.Type = l.ConsumeIdent()
+
+						if l.Peek() == '=' {
+							l.ConsumeToken('=')
+							ext := l.ConsumeIdent()
+							arg.TypeExt = &ext
+						}
+
 						if x := l.sc.TokenText(); x == "!" {
 							arg.Null = false
 							l.ConsumeToken('!')
@@ -204,68 +280,6 @@ func (s *Schema) ParseSchema(l *Lexer) {
 				}
 				l.ConsumeToken('}')
 
-			case "Query":
-				l.ConsumeToken('{')
-
-				for l.Peek() != '}' {
-					q := Query{}
-					q.Name = l.ConsumeIdent()
-
-					if l.Peek() == '(' {
-
-						l.ConsumeToken('(')
-						for l.Peek() != ')' {
-							arg := Arg{}
-							arg.Param = l.ConsumeIdent()
-							l.ConsumeToken(':')
-							arg.Type = l.ConsumeIdent()
-							if x := l.sc.TokenText(); x == "!" {
-								arg.Null = false
-								l.ConsumeToken('!')
-							} else {
-								arg.Null = false
-							}
-
-							q.Args = append(q.Args, &arg)
-						}
-						l.ConsumeToken(')')
-					}
-
-					l.ConsumeToken(':')
-					r := Resp{}
-					if l.Peek() == '[' {
-						r.IsList = true
-						l.ConsumeToken('[')
-						r.Name = l.ConsumeIdent()
-						if x := l.sc.TokenText(); x == "!" {
-							r.Null = false
-							l.ConsumeToken('!')
-						} else {
-							r.Null = true
-						}
-						l.ConsumeToken(']')
-						if x := l.sc.TokenText(); x == "!" {
-							r.IsListNull = false
-							l.ConsumeToken('!')
-						} else {
-							r.IsListNull = true
-						}
-					} else {
-						r.IsList = false
-						r.IsListNull = false
-						r.Name = l.ConsumeIdent()
-						if x := l.sc.TokenText(); x == "!" {
-							r.Null = false
-							l.ConsumeToken('!')
-						} else {
-							r.Null = true
-						}
-					}
-					q.Resp = r
-					s.Queries = append(s.Queries, &q)
-				}
-				l.ConsumeToken('}')
-
 			case "Subscription":
 				l.ConsumeToken('{')
 
@@ -278,6 +292,13 @@ func (s *Schema) ParseSchema(l *Lexer) {
 						arg.Param = l.ConsumeIdent()
 						l.ConsumeToken(':')
 						arg.Type = l.ConsumeIdent()
+
+						if l.Peek() == '=' {
+							l.ConsumeToken('=')
+							ext := l.ConsumeIdent()
+							arg.TypeExt = &ext
+						}
+
 						if x := l.sc.TokenText(); x == "!" {
 							arg.Null = false
 							l.ConsumeToken('!')
@@ -327,6 +348,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 				t := TypeName{}
 				t.Name = x
 
+				// handling in case of type has implements
 				if l.Peek() == scanner.Ident {
 					l.ConsumeIdent()
 					t.Impl = true
@@ -341,6 +363,31 @@ func (s *Schema) ParseSchema(l *Lexer) {
 				for l.Peek() != '}' {
 					p := Prop{}
 					p.Name = l.ConsumeIdent()
+
+					if l.Peek() == '(' {
+						l.ConsumeToken('(')
+						for l.Peek() != ')' {
+							arg := Arg{}
+							arg.Param = l.ConsumeIdent()
+							l.ConsumeToken(':')
+							arg.Type = l.ConsumeIdent()
+							if l.Peek() == '=' {
+								l.ConsumeToken('=')
+								ext := l.ConsumeIdent()
+								arg.TypeExt = &ext
+							}
+							if x := l.sc.TokenText(); x == "!" {
+								arg.Null = false
+								l.ConsumeToken('!')
+							} else {
+								arg.Null = true
+							}
+
+							p.Args = append(p.Args, &arg)
+						}
+						l.ConsumeToken(')')
+					}
+
 					l.ConsumeToken(':')
 
 					if l.Peek() == '[' {
