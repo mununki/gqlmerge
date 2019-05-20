@@ -43,10 +43,12 @@ type TypeName struct {
 }
 
 type Arg struct {
-	Param   string
-	Type    string
-	TypeExt *string // in case of enum e.g. admin(role: Role = ADMIN): Admin!
-	Null    bool
+	Param      string
+	Type       string
+	TypeExt    *string // in case of enum e.g. admin(role: Role = ADMIN): Admin!
+	Null       bool
+	IsList     bool
+	IsListNull bool
 }
 
 type Resp struct {

@@ -48,6 +48,9 @@ func (s *Schema) ParseSchema(l *Lexer) {
 			for l.Peek() != '}' {
 				p := Prop{}
 				p.Name = l.ConsumeIdent()
+
+				p.Args = ParseArgument(l)
+
 				l.ConsumeToken(':')
 
 				if l.Peek() == '[' {
@@ -154,32 +157,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 					q := Query{}
 					q.Name = l.ConsumeIdent()
 
-					if l.Peek() == '(' {
-
-						l.ConsumeToken('(')
-						for l.Peek() != ')' {
-							arg := Arg{}
-							arg.Param = l.ConsumeIdent()
-							l.ConsumeToken(':')
-							arg.Type = l.ConsumeIdent()
-
-							if l.Peek() == '=' {
-								l.ConsumeToken('=')
-								ext := l.ConsumeIdent()
-								arg.TypeExt = &ext
-							}
-
-							if x := l.sc.TokenText(); x == "!" {
-								arg.Null = false
-								l.ConsumeToken('!')
-							} else {
-								arg.Null = true
-							}
-
-							q.Args = append(q.Args, &arg)
-						}
-						l.ConsumeToken(')')
-					}
+					q.Args = ParseArgument(l)
 
 					l.ConsumeToken(':')
 					r := Resp{}
@@ -222,29 +200,9 @@ func (s *Schema) ParseSchema(l *Lexer) {
 				for l.Peek() != '}' {
 					m := Mutation{}
 					m.Name = l.ConsumeIdent()
-					l.ConsumeToken('(')
-					for l.Peek() != ')' {
-						arg := Arg{}
-						arg.Param = l.ConsumeIdent()
-						l.ConsumeToken(':')
-						arg.Type = l.ConsumeIdent()
 
-						if l.Peek() == '=' {
-							l.ConsumeToken('=')
-							ext := l.ConsumeIdent()
-							arg.TypeExt = &ext
-						}
+					m.Args = ParseArgument(l)
 
-						if x := l.sc.TokenText(); x == "!" {
-							arg.Null = false
-							l.ConsumeToken('!')
-						} else {
-							arg.Null = true
-						}
-
-						m.Args = append(m.Args, &arg)
-					}
-					l.ConsumeToken(')')
 					l.ConsumeToken(':')
 					r := Resp{}
 					if l.Peek() == '[' {
@@ -286,29 +244,9 @@ func (s *Schema) ParseSchema(l *Lexer) {
 				for l.Peek() != '}' {
 					c := Subscription{}
 					c.Name = l.ConsumeIdent()
-					l.ConsumeToken('(')
-					for l.Peek() != ')' {
-						arg := Arg{}
-						arg.Param = l.ConsumeIdent()
-						l.ConsumeToken(':')
-						arg.Type = l.ConsumeIdent()
 
-						if l.Peek() == '=' {
-							l.ConsumeToken('=')
-							ext := l.ConsumeIdent()
-							arg.TypeExt = &ext
-						}
+					c.Args = ParseArgument(l)
 
-						if x := l.sc.TokenText(); x == "!" {
-							arg.Null = false
-							l.ConsumeToken('!')
-						} else {
-							arg.Null = true
-						}
-
-						c.Args = append(c.Args, &arg)
-					}
-					l.ConsumeToken(')')
 					l.ConsumeToken(':')
 					r := Resp{}
 					if l.Peek() == '[' {
@@ -364,29 +302,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 					p := Prop{}
 					p.Name = l.ConsumeIdent()
 
-					if l.Peek() == '(' {
-						l.ConsumeToken('(')
-						for l.Peek() != ')' {
-							arg := Arg{}
-							arg.Param = l.ConsumeIdent()
-							l.ConsumeToken(':')
-							arg.Type = l.ConsumeIdent()
-							if l.Peek() == '=' {
-								l.ConsumeToken('=')
-								ext := l.ConsumeIdent()
-								arg.TypeExt = &ext
-							}
-							if x := l.sc.TokenText(); x == "!" {
-								arg.Null = false
-								l.ConsumeToken('!')
-							} else {
-								arg.Null = true
-							}
-
-							p.Args = append(p.Args, &arg)
-						}
-						l.ConsumeToken(')')
-					}
+					p.Args = ParseArgument(l)
 
 					l.ConsumeToken(':')
 
@@ -546,4 +462,56 @@ func (s *Schema) UniqueInput(wg *sync.WaitGroup) {
 		j++
 	}
 	s.Inputs = s.Inputs[:j]
+}
+
+func ParseArgument(l *Lexer) []*Arg {
+	args := []*Arg{}
+
+	for l.Peek() == '(' {
+		l.ConsumeToken('(')
+		for l.Peek() != ')' {
+			arg := Arg{}
+			arg.Param = l.ConsumeIdent()
+			l.ConsumeToken(':')
+
+			if l.Peek() == '[' {
+				arg.IsList = true
+				l.ConsumeToken('[')
+				arg.Type = l.ConsumeIdent()
+				if l.Peek() == '!' {
+					arg.Null = false
+					l.ConsumeToken('!')
+				} else {
+					arg.Null = true
+				}
+				l.ConsumeToken(']')
+
+				if x := l.sc.TokenText(); x == "!" {
+					arg.IsListNull = false
+					l.ConsumeToken('!')
+				} else {
+					arg.IsListNull = true
+				}
+			} else {
+				arg.Type = l.ConsumeIdent()
+
+				if l.Peek() == '=' {
+					l.ConsumeToken('=')
+					ext := l.ConsumeIdent()
+					arg.TypeExt = &ext
+				}
+
+				if x := l.sc.TokenText(); x == "!" {
+					arg.Null = false
+					l.ConsumeToken('!')
+				} else {
+					arg.Null = true
+				}
+			}
+
+			args = append(args, &arg)
+		}
+		l.ConsumeToken(')')
+	}
+	return args
 }
