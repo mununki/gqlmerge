@@ -18,21 +18,24 @@ type Schema struct {
 }
 
 type Mutation struct {
-	Name string
-	Args []*Arg
-	Resp Resp
+	Name      string
+	Args      []*Arg
+	Resp      Resp
+	Directive *Directive
 }
 
 type Query struct {
-	Name string
-	Args []*Arg
-	Resp Resp
+	Name      string
+	Args      []*Arg
+	Resp      Resp
+	Directive *Directive
 }
 
 type Subscription struct {
-	Name string
-	Args []*Arg
-	Resp Resp
+	Name      string
+	Args      []*Arg
+	Resp      Resp
+	Directive *Directive
 }
 
 type TypeName struct {
@@ -43,10 +46,12 @@ type TypeName struct {
 }
 
 type Arg struct {
-	Param   string
-	Type    string
-	TypeExt *string // in case of enum e.g. admin(role: Role = ADMIN): Admin!
-	Null    bool
+	Param      string
+	Type       string
+	TypeExt    *string // in case of enum e.g. admin(role: Role = ADMIN): Admin!
+	Null       bool
+	IsList     bool
+	IsListNull bool
 }
 
 type Resp struct {
@@ -63,6 +68,7 @@ type Prop struct {
 	Null       bool
 	IsList     bool
 	IsListNull bool
+	Directive  *Directive
 }
 
 type Scalar struct {
@@ -87,4 +93,8 @@ type Union struct {
 type Input struct {
 	Name  string
 	Props []*Prop
+}
+
+type Directive struct {
+	string
 }
