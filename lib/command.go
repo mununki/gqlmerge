@@ -40,7 +40,7 @@ Options:
 		NotEnoughArgs:    "❌ Not enough arguments",
 		OutputFileNeeded: "❌ Output file argument is needed",
 		WrongOption:      "❌ Wrong options",
-		Version:          "v0.1.2",
+		Version:          "v0.1.4",
 	}
 
 	// check the number of args
