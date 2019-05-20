@@ -4,3 +4,6 @@ gqlmerge
 *.gql
 *.graphql
 *.gz
+
+.vscode
+.idea
