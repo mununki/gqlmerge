@@ -25,7 +25,8 @@ func (sc *Schema) GetSchema(path string) {
 			return nil
 		}
 
-		if filepath.Ext(p) != ".graphql" {
+		ext := filepath.Ext(p)
+		if ext != ".graphql" && ext != ".gql" {
 			return nil
 		}
 
@@ -46,6 +47,6 @@ func (sc *Schema) GetSchema(path string) {
 	}
 
 	if len(sc.Files) > 0 {
-		fmt.Printf("🎉 Total %d *.graphql files found!\n", len(sc.Files))
+		fmt.Printf("🎉 Total %d GraphQL files found!\n", len(sc.Files))
 	}
 }
