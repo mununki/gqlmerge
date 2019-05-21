@@ -8,7 +8,9 @@ import (
 
 // Command for gqlmerge
 type Command struct {
-	Args []string
+	Args   []string
+	Paths  []string
+	Output string
 }
 
 type Options struct {
@@ -43,13 +45,15 @@ Options:
 		Version:          "v0.1.5",
 	}
 
+	argsCount := len(c.Args)
+
 	// check the number of args
-	if len(c.Args) <= 1 {
+	if argsCount <= 1 {
 		// no arg -> print help msg
 		return fmt.Errorf(options.Help)
 	}
 
-	if len(c.Args) == 2 {
+	if argsCount == 2 {
 		if strings.HasPrefix(c.Args[1], "-") {
 			switch c.Args[1] {
 			case "-v":
@@ -64,9 +68,16 @@ Options:
 		return fmt.Errorf(options.OutputFileNeeded)
 	}
 
-	// check first arg, path is existing
-	if _, err := os.Stat(c.Args[1]); os.IsNotExist(err) {
-		return fmt.Errorf(options.PathNotExist, c.Args[1])
+	c.Paths = c.Args[1 : argsCount-1]
+	c.Output = c.Args[argsCount-1]
+
+	// check passed paths is existing.
+	// iter from 1 to argsCount-1 because the last
+	// argument is an output file
+	for _, path := range c.Paths {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			return fmt.Errorf(options.PathNotExist, path)
+		}
 	}
 
 	return nil
