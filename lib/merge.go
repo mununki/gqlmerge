@@ -7,13 +7,33 @@ import (
 	"sync"
 )
 
-func Merge(path string) *string {
+func Merge(paths ...string) *string {
+	schemas := make([]Schema, 0, len(paths))
+
+	for _, path := range paths {
+		if sc := getSchema(path); sc != nil {
+			schemas = append(schemas, *sc)
+		}
+	}
+
+	if len(schemas) == 0 {
+		return nil
+	}
+
+	schema := joinSchemas(schemas)
+	ms := MergedSchema{}
+	ss := ms.StitchSchema(&schema)
+	return &ss
+}
+
+func getSchema(path string) *Schema {
 	abs, err := filepath.Abs(path)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
-	sc := Schema{}
+
+	sc := &Schema{}
 	// at this moment, path should be an absolute path
 	sc.GetSchema(abs)
 
@@ -26,22 +46,38 @@ func Merge(path string) *string {
 		sc.ParseSchema(l)
 	}
 
-	var wg sync.WaitGroup
+	return sc
+}
 
+func joinSchemas(schemas []Schema) Schema {
+	schema := Schema{}
+
+	for _, s := range schemas {
+		schema.Files = append(schema.Files, s.Files...)
+		schema.Mutations = append(schema.Mutations, s.Mutations...)
+		schema.Queries = append(schema.Queries, s.Queries...)
+		schema.Subscriptions = append(schema.Subscriptions, s.Subscriptions...)
+		schema.TypeNames = append(schema.TypeNames, s.TypeNames...)
+		schema.Scalars = append(schema.Scalars, s.Scalars...)
+		schema.Enums = append(schema.Enums, s.Enums...)
+		schema.Interfaces = append(schema.Interfaces, s.Interfaces...)
+		schema.Unions = append(schema.Unions, s.Unions...)
+		schema.Inputs = append(schema.Inputs, s.Inputs...)
+	}
+
+	wg := sync.WaitGroup{}
 	wg.Add(8)
 
-	go sc.UniqueMutation(&wg)
-	go sc.UniqueQuery(&wg)
-	go sc.UniqueTypeName(&wg)
-	go sc.UniqueScalar(&wg)
-	go sc.UniqueEnum(&wg)
-	go sc.UniqueInterface(&wg)
-	go sc.UniqueUnion(&wg)
-	go sc.UniqueInput(&wg)
+	go schema.UniqueMutation(&wg)
+	go schema.UniqueQuery(&wg)
+	go schema.UniqueTypeName(&wg)
+	go schema.UniqueScalar(&wg)
+	go schema.UniqueEnum(&wg)
+	go schema.UniqueInterface(&wg)
+	go schema.UniqueUnion(&wg)
+	go schema.UniqueInput(&wg)
 
 	wg.Wait()
 
-	ms := MergedSchema{}
-	ss := ms.StitchSchema(&sc)
-	return &ss
+	return schema
 }

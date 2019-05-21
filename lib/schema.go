@@ -46,7 +46,14 @@ func (sc *Schema) GetSchema(path string) {
 		panic(err)
 	}
 
+	// try to get relative path
+	rel, err := filepath.Rel(os.Getenv("PWD"), path)
+	if err == nil {
+		// if failed print absolute path
+		path = rel
+	}
+
 	if len(sc.Files) > 0 {
-		fmt.Printf("🎉 Total %d GraphQL files found!\n", len(sc.Files))
+		fmt.Printf("🎉 [%s] Total %d GraphQL files found!\n", path, len(sc.Files))
 	}
 }

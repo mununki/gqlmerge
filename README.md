@@ -11,6 +11,7 @@ A tool to merge and stitch modularized GraphQL files into one schema file
 
 - Fast, blasing fast
 - Find `*.graphql` and `*.gql` files in recursive way
+- Merge and stitch schema from several directories
 - CLI to use in shell or script
 
 ## How to use
@@ -137,9 +138,9 @@ type User {
 ## How to use
 
 ```shell
-$ gqlmerge [PATH] [OUTPUT]
+$ gqlmerge [PATH ...] [OUTPUT]
 
-// PATH : directory path of *.graphql or *.gql
+// PATH : directories with schema
 // OUTPUT : output file name
 ```
 

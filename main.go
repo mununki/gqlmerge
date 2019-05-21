@@ -18,17 +18,17 @@ func main() {
 
 	// TODO : needs to improve to work with a relative path.
 
-	ss := gql.Merge(os.Args[1])
+	ss := gql.Merge(cmd.Paths...)
 
 	if ss != nil {
 		bs := []byte(*ss)
-		err := ioutil.WriteFile(os.Args[2], bs, 0644)
+		err := ioutil.WriteFile(cmd.Output, bs, 0644)
 		if err != nil {
-			fmt.Printf("😱 Error in writing '%s' file", os.Args[2])
+			fmt.Printf("😱 Error in writing '%s' file", cmd.Output)
 		}
 
-		fmt.Printf("👍 Successfully generated '%s'", os.Args[2])
+		fmt.Printf("👍 Successfully generated '%s'", cmd.Output)
 	} else {
-		fmt.Printf("😳 Not found any GraphQL files in %s", os.Args[1])
+		fmt.Printf("😳 Not found any GraphQL files in %v", cmd.Paths)
 	}
 }
