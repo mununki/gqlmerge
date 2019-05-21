@@ -29,6 +29,6 @@ func main() {
 
 		fmt.Printf("👍 Successfully generated '%s'", os.Args[2])
 	} else {
-		fmt.Printf("😳 Not found any *.graphql files in %s", os.Args[1])
+		fmt.Printf("😳 Not found any GraphQL files in %s", os.Args[1])
 	}
 }

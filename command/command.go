@@ -22,10 +22,10 @@ type Options struct {
 
 func (c *Command) Check() error {
 	options := Options{
-		Help: `👋 'gqlmerge' is the tool to merge & stitch *.graphql files and generate a Graphql schema
+		Help: `👋 'gqlmerge' is the tool to merge & stitch GraphQL files and generate a GraphQL schema
 Author : Woonki Moon <woonki.moon@gmail.com>
 
-Usage:	gqlmerge [PATH] [OUTPUT.graphql]
+Usage:	gqlmerge [PATH] [OUTPUT]
 
 e.g.
 

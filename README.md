@@ -10,7 +10,7 @@ A tool to merge and stitch modularized GraphQL files into one schema file
 ## Features
 
 - Fast, blasing fast
-- Find `*.graphql` files in recursive way
+- Find `*.graphql` and `*.gql` files in recursive way
 - CLI to use in shell or script
 
 ## How to use
@@ -139,7 +139,7 @@ type User {
 ```shell
 $ gqlmerge [PATH] [OUTPUT]
 
-// PATH : directory path of *.graphql
+// PATH : directory path of *.graphql or *.gql
 // OUTPUT : output file name
 ```
 
