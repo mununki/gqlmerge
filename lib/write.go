@@ -359,7 +359,8 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 			ms.WriteString("\n")
 		}
-		ms.WriteString("}")
+
+		ms.WriteString("}\n")
 		if j < len(s.Interfaces)-1 {
 			ms.WriteString("\n")
 		}
