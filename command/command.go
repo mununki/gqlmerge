@@ -1,4 +1,4 @@
-package lib
+package command
 
 import (
 	"fmt"
@@ -40,7 +40,7 @@ Options:
 		NotEnoughArgs:    "❌ Not enough arguments",
 		OutputFileNeeded: "❌ Output file argument is needed",
 		WrongOption:      "❌ Wrong options",
-		Version:          "v0.1.4",
+		Version:          "v0.1.5",
 	}
 
 	// check the number of args

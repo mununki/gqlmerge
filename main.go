@@ -5,11 +5,12 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/mattdamon108/command"
 	gql "github.com/mattdamon108/gqlmerge/lib"
 )
 
 func main() {
-	cmd := gql.Command{Args: os.Args}
+	cmd := command.Command{Args: os.Args}
 	if err := cmd.Check(); err != nil {
 		fmt.Println(err)
 		os.Exit(0)
