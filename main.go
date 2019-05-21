@@ -25,6 +25,7 @@ func main() {
 		err := ioutil.WriteFile(cmd.Output, bs, 0644)
 		if err != nil {
 			fmt.Printf("😱 Error in writing '%s' file", cmd.Output)
+			return
 		}
 
 		fmt.Printf("👍 Successfully generated '%s'", cmd.Output)
