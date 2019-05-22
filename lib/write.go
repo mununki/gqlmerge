@@ -65,9 +65,9 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	}
 	if numOfSubs > 0 {
 		ms.addIndent(2)
-		ms.WriteString("Subscription: Subscription\n")
+		ms.WriteString("subscription: Subscription\n")
 	}
-	ms.WriteString("}\n")
+	ms.WriteString("}\n\n")
 
 	if numOfQurs > 0 {
 		ms.WriteString(`type Query {
@@ -112,7 +112,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 			ms.WriteString("\n")
 		}
-		ms.WriteString("}\n")
+		ms.WriteString("}\n\n")
 	}
 
 	if numOfMuts > 0 {
@@ -158,7 +158,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 			ms.WriteString("\n")
 		}
-		ms.WriteString("}\n")
+		ms.WriteString("}\n\n")
 	}
 
 	if numOfSubs > 0 {
@@ -204,7 +204,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 			ms.WriteString("\n")
 		}
-		ms.WriteString("}\n")
+		ms.WriteString("}\n\n")
 	}
 
 	for i, t := range s.TypeNames {
@@ -254,7 +254,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 			ms.WriteString("\n")
 		}
-		ms.WriteString("}")
+		ms.WriteString("}\n")
 		if i != len(s.TypeNames)-1 {
 			ms.WriteString("\n")
 		}
@@ -262,7 +262,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	ms.WriteString("\n")
 
 	for i, c := range s.Scalars {
-		ms.WriteString("scalar " + c.Name)
+		ms.WriteString("scalar " + c.Name + "\n")
 		if i != len(s.Scalars)-1 {
 			ms.WriteString("\n")
 		}
@@ -275,7 +275,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 			ms.addIndent(2)
 			ms.WriteString(n + "\n")
 		}
-		ms.WriteString("}")
+		ms.WriteString("}\n")
 		if i != len(s.Enums)-1 {
 			ms.WriteString("\n")
 		}
@@ -325,7 +325,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 			ms.WriteString("\n")
 		}
-		ms.WriteString("}")
+		ms.WriteString("}\n")
 		if j < len(s.Interfaces)-1 {
 			ms.WriteString("\n")
 		}
@@ -334,14 +334,9 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 	for _, u := range s.Unions {
 		ms.WriteString("union " + u.Name + " = ")
-		for j, f := range u.Fields {
-			ms.WriteString(f)
-			if j < len(u.Fields)-1 {
-				ms.WriteString(" | ")
-			}
-		}
+		fields := strings.Join(u.Fields, " | ")
+		ms.WriteString(fields + "\n\n")
 	}
-	ms.WriteString("\n")
 
 	for j, i := range s.Inputs {
 		ms.WriteString("input " + i.Name + " {\n")
@@ -371,7 +366,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		}
 
 		ms.WriteString("}\n")
-		if j < len(s.Interfaces)-1 {
+		if j < len(s.Inputs)-1 {
 			ms.WriteString("\n")
 		}
 	}
