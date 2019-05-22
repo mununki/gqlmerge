@@ -22,7 +22,7 @@ func Merge(paths ...string) *string {
 
 	schema := joinSchemas(schemas)
 	ms := MergedSchema{}
-	ss := ms.StitchSchema(&schema)
+	ss := ms.StitchSchema(schema)
 	return &ss
 }
 
@@ -49,7 +49,7 @@ func getSchema(path string) *Schema {
 	return sc
 }
 
-func joinSchemas(schemas []Schema) Schema {
+func joinSchemas(schemas []Schema) *Schema {
 	schema := Schema{}
 
 	for _, s := range schemas {
@@ -79,5 +79,5 @@ func joinSchemas(schemas []Schema) Schema {
 
 	wg.Wait()
 
-	return schema
+	return &schema
 }
