@@ -50,152 +50,162 @@ func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
 }
 
 func (ms *MergedSchema) StitchSchema(s *Schema) string {
+	numOfQurs := len(s.Queries)
+	numOfMuts := len(s.Mutations)
+	numOfSubs := len(s.Subscriptions)
+
 	ms.WriteString("schema {\n")
-	if len(s.Queries) > 0 {
+	if numOfQurs > 0 {
 		ms.addIndent(2)
 		ms.WriteString("query: Query\n")
 	}
-	if len(s.Mutations) > 0 {
+	if numOfMuts > 0 {
 		ms.addIndent(2)
 		ms.WriteString("mutation: Mutation\n")
 	}
-	if len(s.Subscriptions) > 0 {
+	if numOfSubs > 0 {
 		ms.addIndent(2)
 		ms.WriteString("Subscription: Subscription\n")
 	}
 	ms.WriteString("}\n")
 
-	ms.WriteString(`type Query {
+	if numOfQurs > 0 {
+		ms.WriteString(`type Query {
 `)
-	for _, q := range s.Queries {
-		ms.addIndent(2)
-		ms.WriteString(q.Name)
-		if l := len(q.Args); l > 0 {
-			ms.WriteString("(")
-			if l > 2 {
-				ms.WriteString("\n")
+		for _, q := range s.Queries {
+			ms.addIndent(2)
+			ms.WriteString(q.Name)
+			if l := len(q.Args); l > 0 {
+				ms.WriteString("(")
+				if l > 2 {
+					ms.WriteString("\n")
+				}
+
+				for i, a := range q.Args {
+					ms.stitchArgument(a, l, i)
+				}
+
+				if l > 2 {
+					ms.WriteString("\n")
+					ms.addIndent(2)
+				}
+				ms.WriteString(")")
+			}
+			ms.WriteString(": ")
+			if q.Resp.IsList {
+				ms.WriteString("[")
+			}
+			ms.WriteString(q.Resp.Name)
+			if !q.Resp.Null {
+				ms.WriteString("!")
+			}
+			if q.Resp.IsList {
+				ms.WriteString("]")
+			}
+			if q.Resp.IsList && !q.Resp.IsListNull {
+				ms.WriteString("!")
 			}
 
-			for i, a := range q.Args {
-				ms.stitchArgument(a, l, i)
+			if q.Directive != nil {
+				ms.WriteString(" @" + q.Directive.string)
 			}
 
-			if l > 2 {
-				ms.WriteString("\n")
-				ms.addIndent(2)
-			}
-			ms.WriteString(")")
+			ms.WriteString("\n")
 		}
-		ms.WriteString(": ")
-		if q.Resp.IsList {
-			ms.WriteString("[")
-		}
-		ms.WriteString(q.Resp.Name)
-		if !q.Resp.Null {
-			ms.WriteString("!")
-		}
-		if q.Resp.IsList {
-			ms.WriteString("]")
-		}
-		if q.Resp.IsList && !q.Resp.IsListNull {
-			ms.WriteString("!")
-		}
-
-		if q.Directive != nil {
-			ms.WriteString(" @" + q.Directive.string)
-		}
-
-		ms.WriteString("\n")
+		ms.WriteString("}\n")
 	}
-	ms.WriteString("}\n")
 
-	ms.WriteString(`type Mutation {
+	if numOfMuts > 0 {
+		ms.WriteString(`type Mutation {
 `)
-	for _, m := range s.Mutations {
-		ms.addIndent(2)
-		ms.WriteString(m.Name)
-		if l := len(m.Args); l > 0 {
-			ms.WriteString("(")
-			if l > 2 {
-				ms.WriteString("\n")
+		for _, m := range s.Mutations {
+			ms.addIndent(2)
+			ms.WriteString(m.Name)
+			if l := len(m.Args); l > 0 {
+				ms.WriteString("(")
+				if l > 2 {
+					ms.WriteString("\n")
+				}
+
+				for i, a := range m.Args {
+					ms.stitchArgument(a, l, i)
+				}
+
+				if l > 2 {
+					ms.WriteString("\n")
+					ms.addIndent(2)
+				}
+				ms.WriteString(")")
+			}
+			ms.WriteString(": ")
+			if m.Resp.IsList {
+				ms.WriteString("[")
+			}
+			ms.WriteString(m.Resp.Name)
+			if !m.Resp.Null {
+				ms.WriteString("!")
+			}
+			if m.Resp.IsList {
+				ms.WriteString("]")
+			}
+			if m.Resp.IsList && !m.Resp.IsListNull {
+				ms.WriteString("!")
 			}
 
-			for i, a := range m.Args {
-				ms.stitchArgument(a, l, i)
+			if m.Directive != nil {
+				ms.WriteString(" @" + m.Directive.string)
 			}
 
-			if l > 2 {
-				ms.WriteString("\n")
-				ms.addIndent(2)
-			}
-			ms.WriteString(")")
+			ms.WriteString("\n")
 		}
-		ms.WriteString(": ")
-		if m.Resp.IsList {
-			ms.WriteString("[")
-		}
-		ms.WriteString(m.Resp.Name)
-		if !m.Resp.Null {
-			ms.WriteString("!")
-		}
-		if m.Resp.IsList {
-			ms.WriteString("]")
-		}
-		if m.Resp.IsList && !m.Resp.IsListNull {
-			ms.WriteString("!")
-		}
-
-		if m.Directive != nil {
-			ms.WriteString(" @" + m.Directive.string)
-		}
-
-		ms.WriteString("\n")
+		ms.WriteString("}\n")
 	}
-	ms.WriteString("}\n")
 
-	ms.WriteString(`type Subscription {
+	if numOfSubs > 0 {
+		ms.WriteString(`type Subscription {
 `)
-	for _, c := range s.Subscriptions {
-		ms.addIndent(2)
-		ms.WriteString(c.Name)
-		if l := len(c.Args); l > 0 {
-			ms.WriteString("(")
-			if l > 2 {
-				ms.WriteString("\n")
+		for _, c := range s.Subscriptions {
+			ms.addIndent(2)
+			ms.WriteString(c.Name)
+			if l := len(c.Args); l > 0 {
+				ms.WriteString("(")
+				if l > 2 {
+					ms.WriteString("\n")
+				}
+
+				for i, a := range c.Args {
+					ms.stitchArgument(a, l, i)
+				}
+
+				if l > 2 {
+					ms.WriteString("\n")
+					ms.addIndent(2)
+				}
+				ms.WriteString(")")
+			}
+			ms.WriteString(": ")
+			if c.Resp.IsList {
+				ms.WriteString("[")
+			}
+			ms.WriteString(c.Resp.Name)
+			if !c.Resp.Null {
+				ms.WriteString("!")
+			}
+			if c.Resp.IsList {
+				ms.WriteString("]")
+			}
+			if c.Resp.IsList && !c.Resp.IsListNull {
+				ms.WriteString("!")
 			}
 
-			for i, a := range c.Args {
-				ms.stitchArgument(a, l, i)
+			if c.Directive != nil {
+				ms.WriteString(" @" + c.Directive.string)
 			}
 
-			if l > 2 {
-				ms.WriteString("\n")
-				ms.addIndent(2)
-			}
-			ms.WriteString(")")
+			ms.WriteString("\n")
 		}
-		ms.WriteString(": ")
-		if c.Resp.IsList {
-			ms.WriteString("[")
-		}
-		ms.WriteString(c.Resp.Name)
-		if !c.Resp.Null {
-			ms.WriteString("!")
-		}
-		if c.Resp.IsList {
-			ms.WriteString("]")
-		}
-		if c.Resp.IsList && !c.Resp.IsListNull {
-			ms.WriteString("!")
-		}
-
-		if c.Directive != nil {
-			ms.WriteString(" @" + c.Directive.string)
-		}
-
-		ms.WriteString("\n")
+		ms.WriteString("}\n")
 	}
-	ms.WriteString("}\n")
 
 	for i, t := range s.TypeNames {
 		ms.WriteString("type ")
