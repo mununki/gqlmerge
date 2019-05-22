@@ -42,7 +42,7 @@ Options:
 		NotEnoughArgs:    "❌ Not enough arguments",
 		OutputFileNeeded: "❌ Output file argument is needed",
 		WrongOption:      "❌ Wrong options",
-		Version:          "v0.2.0",
+		Version:          "v0.2.1",
 	}
 
 	argsCount := len(c.Args)
