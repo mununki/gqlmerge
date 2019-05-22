@@ -65,7 +65,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	}
 	if numOfSubs > 0 {
 		ms.addIndent(2)
-		ms.WriteString("Subscription: Subscription\n")
+		ms.WriteString("subscription: Subscription\n")
 	}
 	ms.WriteString("}\n")
 
