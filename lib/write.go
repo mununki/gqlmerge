@@ -5,48 +5,27 @@ import (
 )
 
 type MergedSchema struct {
-	buf strings.Builder
+	buf    strings.Builder
+	Indent string
+	Paths  []string
 }
 
-func (ms *MergedSchema) addIndent(n int) {
-	for i := 0; i < n; i++ {
-		ms.buf.WriteString(" ")
-	}
-}
+func (ms *MergedSchema) Merge() *string {
+	schemas := make([]Schema, 0, len(ms.Paths))
 
-func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
-	if l > 2 {
-		ms.addIndent(4)
-	}
-	ms.buf.WriteString(a.Param + ": ")
-
-	if a.IsList {
-		ms.buf.WriteString("[")
-		ms.buf.WriteString(a.Type)
-
-		if !a.Null {
-			ms.buf.WriteString("!")
-		}
-		ms.buf.WriteString("]")
-		if !a.IsListNull {
-			ms.buf.WriteString("!")
-		}
-	} else {
-		ms.buf.WriteString(a.Type)
-		if a.TypeExt != nil {
-			ms.buf.WriteString(" = " + *a.TypeExt)
-		}
-		if !a.Null {
-			ms.buf.WriteString("!")
+	for _, path := range ms.Paths {
+		if sc := getSchema(path); sc != nil {
+			schemas = append(schemas, *sc)
 		}
 	}
 
-	if l <= 2 && i != l-1 {
-		ms.buf.WriteString(", ")
+	if len(schemas) == 0 {
+		return nil
 	}
-	if l > 2 && i != l-1 {
-		ms.buf.WriteString("\n")
-	}
+
+	schema := joinSchemas(schemas)
+	ss := ms.StitchSchema(schema)
+	return &ss
 }
 
 func (ms *MergedSchema) StitchSchema(s *Schema) string {
@@ -56,15 +35,15 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 	ms.buf.WriteString("schema {\n")
 	if numOfQurs > 0 {
-		ms.addIndent(2)
+		ms.addIndent(1)
 		ms.buf.WriteString("query: Query\n")
 	}
 	if numOfMuts > 0 {
-		ms.addIndent(2)
+		ms.addIndent(1)
 		ms.buf.WriteString("mutation: Mutation\n")
 	}
 	if numOfSubs > 0 {
-		ms.addIndent(2)
+		ms.addIndent(1)
 		ms.buf.WriteString("subscription: Subscription\n")
 	}
 	ms.buf.WriteString("}\n\n")
@@ -73,7 +52,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.buf.WriteString(`type Query {
 `)
 		for _, q := range s.Queries {
-			ms.addIndent(2)
+			ms.addIndent(1)
 			ms.buf.WriteString(q.Name)
 			if l := len(q.Args); l > 0 {
 				ms.buf.WriteString("(")
@@ -87,7 +66,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 				if l > 2 {
 					ms.buf.WriteString("\n")
-					ms.addIndent(2)
+					ms.addIndent(1)
 				}
 				ms.buf.WriteString(")")
 			}
@@ -119,7 +98,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.buf.WriteString(`type Mutation {
 `)
 		for _, m := range s.Mutations {
-			ms.addIndent(2)
+			ms.addIndent(1)
 			ms.buf.WriteString(m.Name)
 			if l := len(m.Args); l > 0 {
 				ms.buf.WriteString("(")
@@ -133,7 +112,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 				if l > 2 {
 					ms.buf.WriteString("\n")
-					ms.addIndent(2)
+					ms.addIndent(1)
 				}
 				ms.buf.WriteString(")")
 			}
@@ -165,7 +144,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.buf.WriteString(`type Subscription {
 `)
 		for _, c := range s.Subscriptions {
-			ms.addIndent(2)
+			ms.addIndent(1)
 			ms.buf.WriteString(c.Name)
 			if l := len(c.Args); l > 0 {
 				ms.buf.WriteString("(")
@@ -179,7 +158,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 
 				if l > 2 {
 					ms.buf.WriteString("\n")
-					ms.addIndent(2)
+					ms.addIndent(1)
 				}
 				ms.buf.WriteString(")")
 			}
@@ -215,7 +194,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		}
 		ms.buf.WriteString(" {\n")
 		for _, p := range t.Props {
-			ms.addIndent(2)
+			ms.addIndent(1)
 			ms.buf.WriteString(p.Name)
 
 			if l := len(p.Args); l > 0 {
@@ -228,7 +207,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 				}
 				if l > 2 {
 					ms.buf.WriteString("\n")
-					ms.addIndent(2)
+					ms.addIndent(1)
 				}
 				ms.buf.WriteString(")")
 			}
@@ -272,7 +251,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	for i, e := range s.Enums {
 		ms.buf.WriteString("enum " + e.Name + " {\n")
 		for _, n := range e.Fields {
-			ms.addIndent(2)
+			ms.addIndent(1)
 			ms.buf.WriteString(n + "\n")
 		}
 		ms.buf.WriteString("}\n")
@@ -286,7 +265,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.buf.WriteString("interface " + i.Name + " {\n")
 
 		for _, p := range i.Props {
-			ms.addIndent(2)
+			ms.addIndent(1)
 			ms.buf.WriteString(p.Name)
 
 			if l := len(p.Args); l > 0 {
@@ -299,7 +278,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 				}
 				if l > 2 {
 					ms.buf.WriteString("\n")
-					ms.addIndent(2)
+					ms.addIndent(1)
 				}
 				ms.buf.WriteString(")")
 			}
@@ -342,7 +321,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.buf.WriteString("input " + i.Name + " {\n")
 
 		for _, p := range i.Props {
-			ms.addIndent(2)
+			ms.addIndent(1)
 			ms.buf.WriteString(p.Name + ": ")
 			if p.IsList {
 				ms.buf.WriteString("[")
@@ -372,4 +351,44 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	}
 
 	return ms.buf.String()
+}
+
+func (ms *MergedSchema) addIndent(n int) {
+	i := strings.Repeat(ms.Indent, n)
+	ms.buf.WriteString(i)
+}
+
+func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
+	if l > 2 {
+		ms.addIndent(2)
+	}
+	ms.buf.WriteString(a.Param + ": ")
+
+	if a.IsList {
+		ms.buf.WriteString("[")
+		ms.buf.WriteString(a.Type)
+
+		if !a.Null {
+			ms.buf.WriteString("!")
+		}
+		ms.buf.WriteString("]")
+		if !a.IsListNull {
+			ms.buf.WriteString("!")
+		}
+	} else {
+		ms.buf.WriteString(a.Type)
+		if a.TypeExt != nil {
+			ms.buf.WriteString(" = " + *a.TypeExt)
+		}
+		if !a.Null {
+			ms.buf.WriteString("!")
+		}
+	}
+
+	if l <= 2 && i != l-1 {
+		ms.buf.WriteString(", ")
+	}
+	if l > 2 && i != l-1 {
+		ms.buf.WriteString("\n")
+	}
 }
