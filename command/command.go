@@ -26,20 +26,7 @@ type Options struct {
 
 func (c *Command) Check() error {
 	options := Options{
-		Help: `👋 'gqlmerge' is the tool to merge & stitch GraphQL files and generate a GraphQL schema
-Author : Woonki Moon <woonki.moon@gmail.com>
-
-Usage:	gqlmerge [PATH] [OUTPUT]
-
-e.g.
-
-	gqlmerge ./schema schema.graphql
-
-Options:
-
-	-v	: check the version
-	-h	: help
-`,
+		Help:             Usage(),
 		PathNotExist:     "❌ Path '%s' does not Exist",
 		NotEnoughArgs:    "❌ Not enough arguments",
 		OutputFileNeeded: "❌ Output file argument is needed",
@@ -88,15 +75,7 @@ Options:
 }
 
 func (c *Command) parseFlags() {
-	ident := flag.String("ident", "4s", `
-Flag "ident" defines the padding in the generated GraphQL scheme.
-
-It follows the next pattern: ident={n}{i},
-	* n - amount of idents
-	* i - ident ("t" for tabs and "s" for spaces)
-If "n" is not stated 1 will be used, 
-so "--ident=1t" is equal to "--ident=t"
-`)
+	ident := flag.String("ident", "4s", flagIdentMsg)
 
 	flag.Parse()
 
