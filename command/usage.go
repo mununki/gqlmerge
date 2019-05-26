@@ -9,7 +9,7 @@ func Usage() string {
 Flags:
 
 	%s
-`, flagIdentMsg)
+`, flagIndentMsg)
 
 	return helpMsg + flags
 }
@@ -29,10 +29,10 @@ Options:
 	-h	: help
 `
 
-const flagIdentMsg = `-ident	: defines the padding in the generated GraphQL scheme.
+const flagIndentMsg = `-indent	: defines the padding in the generated GraphQL scheme.
 
-	It follows the next pattern: ident={n}{i},
-		* n - amount of idents
-		* i - ident ("t" for tabs and "s" for spaces)
+	It follows the next pattern: indent={n}{i},
+		* n - amount of indents
+		* i - indent ("t" for tabs and "s" for spaces)
 	If "n" is not stated 1 will be used, 
-	so "--ident=1t" is equal to "--ident=t"`
+	so "--indent=1t" is equal to "--indent=t"`
