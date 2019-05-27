@@ -50,8 +50,11 @@ import gql "github.com/mattdamon108/gqlmerge/lib"
 func main(){
 	// ...
 
-	// path should be a relative path
-	schema := gql.Merge(path)
+	// "  " is indent for the padding in generating schema
+	// in case of using as go module, just " " would be fine
+	//
+	// paths should be a relative path
+	schema := gql.Merge(" ", path1, path2, ...)
 }
 ```
 
