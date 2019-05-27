@@ -18,11 +18,7 @@ func main() {
 
 	// TODO : needs to improve to work with a relative path.
 
-	ms := gql.MergedSchema{
-		Indent: cmd.Indent,
-		Paths:  cmd.Paths,
-	}
-	ss := ms.Merge()
+	ss := gql.Merge(cmd.Indent, cmd.Paths...)
 
 	if ss != nil {
 		bs := []byte(*ss)

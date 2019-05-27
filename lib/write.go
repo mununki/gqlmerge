@@ -7,25 +7,6 @@ import (
 type MergedSchema struct {
 	buf    strings.Builder
 	Indent string
-	Paths  []string
-}
-
-func (ms *MergedSchema) Merge() *string {
-	schemas := make([]Schema, 0, len(ms.Paths))
-
-	for _, path := range ms.Paths {
-		if sc := getSchema(path); sc != nil {
-			schemas = append(schemas, *sc)
-		}
-	}
-
-	if len(schemas) == 0 {
-		return nil
-	}
-
-	schema := joinSchemas(schemas)
-	ss := ms.StitchSchema(schema)
-	return &ss
 }
 
 func (ms *MergedSchema) StitchSchema(s *Schema) string {

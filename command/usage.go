@@ -1,17 +1,7 @@
 package command
 
-import (
-	"fmt"
-)
-
 func Usage() string {
-	flags := fmt.Sprintf(`
-Flags:
-
-	%s
-`, flagIndentMsg)
-
-	return helpMsg + flags
+	return helpMsg + flagIndentMsg
 }
 
 const helpMsg = `👋 'gqlmerge' is the tool to merge & stitch GraphQL files and generate a GraphQL schema
@@ -23,16 +13,19 @@ e.g.
 
 	gqlmerge ./schema schema.graphql
 
-Options:
+Flags:
 
 	-v	: check the version
 	-h	: help
 `
 
-const flagIndentMsg = `-indent	: defines the padding in the generated GraphQL scheme.
+const flagIndentMsg = `
+	-indent	: (default=2s) defines the padding
 
 	It follows the next pattern: indent={n}{i},
+
 		* n - amount of indents
 		* i - indent ("t" for tabs and "s" for spaces)
+
 	If "n" is not stated 1 will be used, 
 	so "--indent=1t" is equal to "--indent=t"`

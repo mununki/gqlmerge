@@ -7,6 +7,25 @@ import (
 	"sync"
 )
 
+func Merge(indent string, paths ...string) *string {
+	schemas := make([]Schema, 0, len(paths))
+
+	for _, path := range paths {
+		if sc := getSchema(path); sc != nil {
+			schemas = append(schemas, *sc)
+		}
+	}
+
+	if len(schemas) == 0 {
+		return nil
+	}
+
+	schema := joinSchemas(schemas)
+	ms := MergedSchema{Indent: indent}
+	ss := ms.StitchSchema(schema)
+	return &ss
+}
+
 func getSchema(path string) *Schema {
 	abs, err := filepath.Abs(path)
 	if err != nil {

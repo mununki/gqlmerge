@@ -32,13 +32,37 @@ func (c *Command) Check() error {
 		NotEnoughArgs:    "❌ Not enough arguments",
 		OutputFileNeeded: "❌ Output file argument is needed",
 		WrongOption:      "❌ Wrong options",
-		Version:          "v0.2.1",
+		Version:          "v0.2.2",
 	}
 
-	err := c.parseFlags()
-	if err != nil {
-		return fmt.Errorf("parse flags: %v", err)
+	help := flag.Bool("h", false, "show the help")
+	version := flag.Bool("v", false, "check the version")
+	indent := flag.String("indent", "4s", flagIndentMsg)
+
+	flag.Parse()
+
+	if *help {
+		return fmt.Errorf(options.Help)
 	}
+
+	if *version {
+		return fmt.Errorf(options.Version)
+	}
+
+	// indent is never nil, so
+	// dereference without checking
+	var err error
+	c.Indent, err = convIndent(*indent)
+	if err != nil {
+		return fmt.Errorf("%s\n%s", err, flagIndentMsg)
+	}
+
+	// flag.Parse() remove program's name (aka os.Args[0])
+	// and parsed flags from os.Args, so
+	// flag.Args() = os.Args - os.Args[0] - parsed flags
+	// i.e flag.Args() contains only the paths to parse
+	// and the output filename.
+	c.Args = flag.Args()
 
 	argsCount := len(c.Args)
 
@@ -49,17 +73,6 @@ func (c *Command) Check() error {
 	}
 
 	if argsCount == 1 {
-		if strings.HasPrefix(c.Args[1], "-") {
-			switch c.Args[1] {
-			case "-v":
-				return fmt.Errorf(options.Version)
-			case "-h":
-				return fmt.Errorf(options.Help)
-			default:
-				return fmt.Errorf(options.WrongOption)
-			}
-		}
-
 		return fmt.Errorf(options.OutputFileNeeded)
 	}
 
@@ -78,31 +91,9 @@ func (c *Command) Check() error {
 	return nil
 }
 
-func (c *Command) parseFlags() (err error) {
-	indent := flag.String("indent", "4s", flagIndentMsg)
-
-	flag.Parse()
-
-	// indent is never nil, so
-	// dereference without checking
-	c.Indent, err = convIndent(*indent)
-	if err != nil {
-		return
-	}
-
-	// flag.Parse() remove program's name (aka os.Args[0])
-	// and parsed flags from os.Args, so
-	// flag.Args() = os.Args - os.Args[0] - parsed flags
-	// i.e flag.Args() contains only the paths to parse
-	// and the output filename.
-	c.Args = flag.Args()
-
-	return
-}
-
 func convIndent(s string) (string, error) {
 	if s == "" {
-		return "", fmt.Errorf("indent should be not empty")
+		return "", fmt.Errorf("indent should not be empty")
 	}
 
 	nStr := s[:len(s)-1]
