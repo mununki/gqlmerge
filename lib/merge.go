@@ -7,6 +7,10 @@ import (
 	"sync"
 )
 
+// Merge func to merge all the GraphQL files
+// Arguments:
+// - indent string : the padding to generate schema eg. "\t" or " "
+// - paths : A relative path to find *.graphql or *.gql files recursively
 func Merge(indent string, paths ...string) *string {
 	schemas := make([]Schema, 0, len(paths))
 
