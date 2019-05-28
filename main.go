@@ -28,8 +28,8 @@ func main() {
 			return
 		}
 
-		fmt.Printf("👍 Successfully generated '%s'", cmd.Output)
+		fmt.Printf("👍 Successfully generated '%s'\n", cmd.Output)
 	} else {
-		fmt.Printf("😳 Not found any GraphQL files in %v", cmd.Paths)
+		fmt.Printf("😳 Not found any GraphQL files in %v\n", cmd.Paths)
 	}
 }

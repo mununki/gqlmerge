@@ -2,6 +2,10 @@
 
 A tool to merge and stitch modularized GraphQL files into one schema file
 
+## Demo
+
+![Demo](/demo/gqlmerge_demo.gif)
+
 ## Stack
 
 - Built in Go
