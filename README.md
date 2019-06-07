@@ -145,7 +145,7 @@ type User {
 ## How to use
 
 ```shell
-$ gqlmerge [PATH ...] [OUTPUT]
+$ gqlmerge --indent=2s [PATH ...] [OUTPUT]
 
 // PATH : directories with schema
 // OUTPUT : output file name

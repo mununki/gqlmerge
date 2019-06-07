@@ -46,11 +46,10 @@ func (sc *Schema) GetSchema(path string) {
 		panic(err)
 	}
 
-	// try to get relative path
-	rel, err := filepath.Rel(os.Getenv("PWD"), path)
+	rel, err := GetRelPath(path)
 	if err == nil {
 		// if failed print absolute path
-		path = rel
+		path = *rel
 	}
 
 	if len(sc.Files) > 0 {

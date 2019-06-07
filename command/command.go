@@ -32,7 +32,7 @@ func (c *Command) Check() error {
 		NotEnoughArgs:    "❌ Not enough arguments",
 		OutputFileNeeded: "❌ Output file argument is needed",
 		WrongOption:      "❌ Wrong options",
-		Version:          "v0.2.2",
+		Version:          "v0.2.3",
 	}
 
 	help := flag.Bool("h", false, "show the help")

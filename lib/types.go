@@ -4,6 +4,12 @@ import (
 	"os"
 )
 
+type BaseFileInfo struct {
+	Filename string
+	Line     int
+	Column   int
+}
+
 type Schema struct {
 	Files         []*os.File
 	Mutations     []*Mutation
@@ -18,6 +24,7 @@ type Schema struct {
 }
 
 type Mutation struct {
+	BaseFileInfo
 	Name      string
 	Args      []*Arg
 	Resp      Resp
@@ -25,6 +32,7 @@ type Mutation struct {
 }
 
 type Query struct {
+	BaseFileInfo
 	Name      string
 	Args      []*Arg
 	Resp      Resp
@@ -32,6 +40,7 @@ type Query struct {
 }
 
 type Subscription struct {
+	BaseFileInfo
 	Name      string
 	Args      []*Arg
 	Resp      Resp
@@ -39,6 +48,7 @@ type Subscription struct {
 }
 
 type TypeName struct {
+	BaseFileInfo
 	Name     string
 	Impl     bool
 	ImplType *string
@@ -72,25 +82,30 @@ type Prop struct {
 }
 
 type Scalar struct {
+	BaseFileInfo
 	Name string
 }
 
 type Enum struct {
+	BaseFileInfo
 	Name   string
 	Fields []string
 }
 
 type Interface struct {
+	BaseFileInfo
 	Name  string
 	Props []*Prop
 }
 
 type Union struct {
+	BaseFileInfo
 	Name   string
 	Fields []string
 }
 
 type Input struct {
+	BaseFileInfo
 	Name  string
 	Props []*Prop
 }

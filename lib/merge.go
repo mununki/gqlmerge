@@ -70,10 +70,11 @@ func joinSchemas(schemas []Schema) *Schema {
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(8)
+	wg.Add(9)
 
 	go schema.UniqueMutation(&wg)
 	go schema.UniqueQuery(&wg)
+	go schema.UniqueSubscription(&wg)
 	go schema.UniqueTypeName(&wg)
 	go schema.UniqueScalar(&wg)
 	go schema.UniqueEnum(&wg)
