@@ -367,6 +367,12 @@ func (s *Schema) ParseSchema(l *Lexer) {
 					t.Impl = true
 					x := l.ConsumeIdent()
 					t.ImplType = &x
+					t.ImplTypes = append(t.ImplTypes, x)
+					for l.Peek() == '&' {
+						l.ConsumeToken('&')
+						x := l.ConsumeIdent()
+						t.ImplTypes = append(t.ImplTypes, x)
+					}
 				} else {
 					t.Impl = false
 				}
@@ -538,7 +544,7 @@ func (s *Schema) UniqueTypeName(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.TypeNames[i].Name == v.Name {
-					if s.TypeNames[i].Impl == v.Impl && s.TypeNames[i].ImplType == v.ImplType && reflect.DeepEqual(s.TypeNames[i].Props, v.Props) {
+					if reflect.DeepEqual(s.TypeNames[i].ImplTypes, v.ImplTypes) && reflect.DeepEqual(s.TypeNames[i].Props, v.Props) {
 						break
 					} else {
 

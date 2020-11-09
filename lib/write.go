@@ -170,8 +170,8 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	for i, t := range s.TypeNames {
 		ms.buf.WriteString("type ")
 		ms.buf.WriteString(t.Name)
-		if t.Impl {
-			ms.buf.WriteString(" implements " + *t.ImplType)
+		if len(t.ImplTypes) > 0 {
+			ms.buf.WriteString(" implements " + strings.Join(t.ImplTypes, " & "))
 		}
 		ms.buf.WriteString(" {\n")
 		for _, p := range t.Props {

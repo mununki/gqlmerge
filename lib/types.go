@@ -49,10 +49,11 @@ type Subscription struct {
 
 type TypeName struct {
 	BaseFileInfo
-	Name     string
-	Impl     bool
-	ImplType *string
-	Props    []*Prop
+	Name      string
+	Impl      bool
+	ImplType  *string // deprecated, use ImplTypes
+	ImplTypes []string
+	Props     []*Prop
 }
 
 type Arg struct {
