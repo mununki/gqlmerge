@@ -38,6 +38,17 @@ func (l *Lexer) ConsumeWhitespace() {
 			continue
 		}
 
+		// GraphQL comments """ ... """
+		// due to scanner recognize the GraphQL comments as string
+		// (first loop) ""
+		// (second loop) " ... "
+		// (third loop) ""
+		// finally buffer gets """ ... """
+		if l.next == scanner.String {
+			l.ConsumeMultiLineComment()
+			continue
+		}
+
 		break
 	}
 }
@@ -50,6 +61,11 @@ func (l *Lexer) ConsumeComment() {
 		}
 		l.buffer.WriteRune(next)
 	}
+}
+
+func (l *Lexer) ConsumeMultiLineComment() {
+	next := l.sc.TokenText()
+	l.buffer.WriteString(next)
 }
 
 func (l *Lexer) ConsumeDirective() {
