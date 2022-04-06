@@ -1,7 +1,9 @@
 package lib
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -55,4 +57,13 @@ func (sc *Schema) GetSchema(path string) {
 	if len(sc.Files) > 0 {
 		fmt.Printf("🎉 [%s] Total %d GraphQL files found!\n", path, len(sc.Files))
 	}
+}
+
+func (sc *Schema) Persist(path string) error {
+	b, err := json.Marshal(sc)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(path, b, 0644)
 }

@@ -1,3 +1,3 @@
-module github.com/mattdamon108/gqlmerge
+module github.com/blessedvictim/gqlmerge
 
-go 1.12
+go 1.18

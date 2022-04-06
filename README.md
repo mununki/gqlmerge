@@ -31,13 +31,13 @@ $ brew install mattdamon108/tools/gqlmerge
 Using `go get`
 
 ```shell
-$ go get -u github.com/mattdamon108/gqlmerge
+$ go get -u github.com/blessedvictim/gqlmerge
 ```
 
 Building with source code
 
 ```shell
-$ git clone https://github.com/mattdamon108/gqlmerge
+$ git clone https://github.com/blessedvictim/gqlmerge
 
 $ cd gqlmerge
 
@@ -49,7 +49,7 @@ $ go install
 Import gqlmerge module
 
 ```go
-import gql "github.com/mattdamon108/gqlmerge/lib"
+import gql "github.com/blessedvictim/gqlmerge/lib"
 
 func main(){
 	// ...
