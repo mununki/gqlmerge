@@ -25,19 +25,19 @@ A tool to merge and stitch modularized GraphQL files into one schema file
 Homebrew
 
 ```shell
-$ brew install mattdamon108/tools/gqlmerge
+$ brew install mununki/tools/gqlmerge
 ```
 
 Using `go get`
 
 ```shell
-$ go get -u github.com/mattdamon108/gqlmerge
+$ go get -u github.com/mununki/gqlmerge
 ```
 
 Building with source code
 
 ```shell
-$ git clone https://github.com/mattdamon108/gqlmerge
+$ git clone https://github.com/mununki/gqlmerge
 
 $ cd gqlmerge
 
@@ -49,7 +49,7 @@ $ go install
 Import gqlmerge module
 
 ```go
-import gql "github.com/mattdamon108/gqlmerge/lib"
+import gql "github.com/mununki/gqlmerge/lib"
 
 func main(){
 	// ...
