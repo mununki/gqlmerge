@@ -4,7 +4,7 @@
 
    When you push the tag, the action is automatically executed on GitHub and the release is registered.
 
-2. Registering a new version in homebrew-tools
+2. Registering a new version in [homebrew-tools](https://github.com/mununki/homebrew-tools)
 
    a. Compress the executable macos binary with tar.
 
