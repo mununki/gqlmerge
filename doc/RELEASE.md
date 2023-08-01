@@ -2,7 +2,7 @@
 
 1. Release to GitHub Repo
 
-When you push the tag, the action is automatically executed on GitHub and the release is registered.
+   When you push the tag, the action is automatically executed on GitHub and the release is registered.
 
 2. Registering a new version in homebrew-tools
 
