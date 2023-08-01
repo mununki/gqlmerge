@@ -1,0 +1,16 @@
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+"""
+TEST
+"""
+interface Node @goModel(model: "todo/ent.Noder") {
+  id: ID! # TEST
+}
+
+enum Color @goModel(model: "backend/ent/color.Color") {
+  Blue @ignore(if: isError)
+  Red
+}

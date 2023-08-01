@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/mattdamon108/gqlmerge/command"
-	gql "github.com/mattdamon108/gqlmerge/lib"
+	"github.com/mununki/gqlmerge/command"
+	gql "github.com/mununki/gqlmerge/lib"
 )
 
 func main() {

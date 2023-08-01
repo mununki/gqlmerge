@@ -58,6 +58,7 @@ func joinSchemas(schemas []Schema) *Schema {
 
 	for _, s := range schemas {
 		schema.Files = append(schema.Files, s.Files...)
+		schema.DirectiveDefinitions = append(schema.DirectiveDefinitions, s.DirectiveDefinitions...)
 		schema.Mutations = append(schema.Mutations, s.Mutations...)
 		schema.Queries = append(schema.Queries, s.Queries...)
 		schema.Subscriptions = append(schema.Subscriptions, s.Subscriptions...)
@@ -70,8 +71,9 @@ func joinSchemas(schemas []Schema) *Schema {
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(9)
+	wg.Add(10)
 
+	go schema.UniqueDirectiveDefinition(&wg)
 	go schema.UniqueMutation(&wg)
 	go schema.UniqueQuery(&wg)
 	go schema.UniqueSubscription(&wg)

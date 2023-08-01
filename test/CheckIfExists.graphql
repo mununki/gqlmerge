@@ -1,0 +1,17 @@
+type Query {
+  checkIfExists(userId: ID!): CheckIfExistsResponse!
+}
+
+type CheckIfExistsResponse {
+  ok: Boolean!
+  error: String
+  user: [User]!
+}
+
+type User {
+  id: ID!
+  email: String!
+  fullName: String!
+}
+
+scalar Price
