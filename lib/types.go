@@ -11,49 +11,51 @@ type BaseFileInfo struct {
 }
 
 type Schema struct {
-	Files         []*os.File
-	Mutations     []*Mutation
-	Queries       []*Query
-	Subscriptions []*Subscription
-	TypeNames     []*TypeName
-	Scalars       []*Scalar
-	Enums         []*Enum
-	Interfaces    []*Interface
-	Unions        []*Union
-	Inputs        []*Input
+	Files                []*os.File
+	Mutations            []*Mutation
+	Queries              []*Query
+	Subscriptions        []*Subscription
+	TypeNames            []*TypeName
+	Scalars              []*Scalar
+	Enums                []*Enum
+	Interfaces           []*Interface
+	Unions               []*Union
+	Inputs               []*Input
+	DirectiveDefinitions []*DirectiveDefinition
 }
 
 type Mutation struct {
 	BaseFileInfo
-	Name      string
-	Args      []*Arg
-	Resp      Resp
-	Directive *Directive
+	Name       string
+	Args       []*Arg
+	Resp       Resp
+	Directives []*Directive
 }
 
 type Query struct {
 	BaseFileInfo
-	Name      string
-	Args      []*Arg
-	Resp      Resp
-	Directive *Directive
+	Name       string
+	Args       []*Arg
+	Resp       Resp
+	Directives []*Directive
 }
 
 type Subscription struct {
 	BaseFileInfo
-	Name      string
-	Args      []*Arg
-	Resp      Resp
-	Directive *Directive
+	Name       string
+	Args       []*Arg
+	Resp       Resp
+	Directives []*Directive
 }
 
 type TypeName struct {
 	BaseFileInfo
-	Name      string
-	Impl      bool
-	ImplType  *string // deprecated, use ImplTypes
-	ImplTypes []string
-	Props     []*Prop
+	Name       string
+	Impl       bool
+	ImplType   *string // deprecated, use ImplTypes
+	ImplTypes  []string
+	Props      []*Prop
+	Directives []*Directive
 }
 
 type Arg struct {
@@ -63,6 +65,7 @@ type Arg struct {
 	Null       bool
 	IsList     bool
 	IsListNull bool
+	Directives []*Directive
 }
 
 type Resp struct {
@@ -79,30 +82,39 @@ type Prop struct {
 	Null       bool
 	IsList     bool
 	IsListNull bool
-	Directive  *Directive
+	Directives []*Directive
 }
 
 type Scalar struct {
 	BaseFileInfo
-	Name string
+	Name       string
+	Directives []*Directive
 }
 
 type Enum struct {
 	BaseFileInfo
-	Name   string
-	Fields []string
+	Name       string
+	EnumValues []EnumValue
+	Directives []*Directive
+}
+
+type EnumValue struct {
+	Name       string
+	Directives []*Directive
 }
 
 type Interface struct {
 	BaseFileInfo
-	Name  string
-	Props []*Prop
+	Name       string
+	Props      []*Prop
+	Directives []*Directive
 }
 
 type Union struct {
 	BaseFileInfo
-	Name   string
-	Fields []string
+	Name       string
+	Fields     []string
+	Directives []*Directive
 }
 
 type Input struct {
@@ -111,6 +123,21 @@ type Input struct {
 	Props []*Prop
 }
 
+type DirectiveDefinition struct {
+	BaseFileInfo
+	Name       string
+	Args       []*Arg
+	Repeatable bool
+	Locations  []string
+}
+
+type DirectiveArg struct {
+	Name   string
+	Value  []string
+	IsList bool
+}
+
 type Directive struct {
-	string
+	Name          string
+	DirectiveArgs []*DirectiveArg
 }

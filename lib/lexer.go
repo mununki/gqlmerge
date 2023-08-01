@@ -29,25 +29,25 @@ func (l *Lexer) ConsumeWhitespace() {
 	for {
 		l.next = l.sc.Scan()
 
-		if l.next == ',' {
-			continue
-		}
+		// if l.next == ',' {
+		// 	continue
+		// }
 
-		if l.next == '#' {
-			l.ConsumeComment()
-			continue
-		}
+		// if l.next == '#' {
+		// 	l.ConsumeComment()
+		// 	continue
+		// }
 
-		// GraphQL comments """ ... """
-		// due to scanner recognize the GraphQL comments as string
-		// (first loop) ""
-		// (second loop) " ... "
-		// (third loop) ""
-		// finally buffer gets """ ... """
-		if l.next == scanner.String {
-			l.ConsumeMultiLineComment()
-			continue
-		}
+		// // GraphQL comments """ ... """
+		// // due to scanner recognize the GraphQL comments as string
+		// // (first loop) ""
+		// // (second loop) " ... "
+		// // (third loop) ""
+		// // finally buffer gets """ ... """
+		// if l.next == scanner.String {
+		// 	l.ConsumeMultiLineComment()
+		// 	continue
+		// }
 
 		break
 	}
@@ -87,6 +87,12 @@ func (l *Lexer) ConsumeIdent() string {
 	name := l.sc.TokenText()
 	l.ConsumeToken(scanner.Ident)
 	return name
+}
+
+func (l *Lexer) ConsumeString() string {
+	str := l.sc.TokenText()
+	l.ConsumeWhitespace()
+	return str
 }
 
 func (l *Lexer) ConsumeToken(expected rune) {

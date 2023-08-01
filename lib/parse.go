@@ -26,12 +26,39 @@ func (s *Schema) ParseSchema(l *Lexer) {
 			}
 			l.ConsumeToken('}')
 
+		case "directive":
+			d := DirectiveDefinition{}
+			d.Filename = l.sc.Filename
+			d.Line = l.sc.Line
+			d.Column = l.sc.Column
+			l.ConsumeToken('@')
+			d.Name = l.ConsumeIdent()
+			d.Args = ParseArgument(l)
+			if l.ConsumeIdent() == "repeatable" {
+				d.Repeatable = true
+			} else {
+				// "on" should be consumed already here
+				d.Repeatable = false
+				ls := []string{}
+				for l.Peek() != '\r' || l.Peek() != '\n' || l.Peek() != scanner.EOF {
+					ls = append(ls, l.ConsumeIdent())
+					if l.Peek() == '|' {
+						l.ConsumeToken('|')
+					} else {
+						break
+					}
+				}
+				d.Locations = ls
+			}
+			s.DirectiveDefinitions = append(s.DirectiveDefinitions, &d)
+
 		case "scalar":
 			c := Scalar{}
 			c.Filename = l.sc.Filename
 			c.Line = l.sc.Line
 			c.Column = l.sc.Column
 			c.Name = l.ConsumeIdent()
+			c.Directives = ParseDirectives(l)
 			s.Scalars = append(s.Scalars, &c)
 
 		case "enum":
@@ -40,9 +67,13 @@ func (s *Schema) ParseSchema(l *Lexer) {
 			e.Line = l.sc.Line
 			e.Column = l.sc.Column
 			e.Name = l.ConsumeIdent()
+			e.Directives = ParseDirectives(l)
 			l.ConsumeToken('{')
 			for l.Peek() != '}' {
-				e.Fields = append(e.Fields, l.ConsumeIdent())
+				ev := EnumValue{}
+				ev.Name = l.ConsumeIdent()
+				ev.Directives = ParseDirectives(l)
+				e.EnumValues = append(e.EnumValues, ev)
 			}
 			l.ConsumeToken('}')
 			s.Enums = append(s.Enums, &e)
@@ -53,6 +84,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 			i.Line = l.sc.Line
 			i.Column = l.sc.Column
 			i.Name = l.ConsumeIdent()
+			i.Directives = ParseDirectives(l)
 
 			l.ConsumeToken('{')
 
@@ -94,11 +126,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 				}
 
 				if l.Peek() == '@' {
-					l.ConsumeToken('@')
-					l.ConsumeDirective()
-					d := Directive{l.GetBuffer()}
-					l.ConsumeWhitespace()
-					p.Directive = &d
+					p.Directives = ParseDirectives(l)
 				}
 
 				i.Props = append(i.Props, &p)
@@ -113,6 +141,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 			u.Line = l.sc.Line
 			u.Column = l.sc.Column
 			u.Name = l.ConsumeIdent()
+			u.Directives = ParseDirectives(l)
 			l.ConsumeToken('=')
 			for l.Peek() != '\r' || l.Peek() != '\n' || l.Peek() != scanner.EOF {
 				u.Fields = append(u.Fields, l.ConsumeIdent())
@@ -167,13 +196,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 					}
 				}
 
-				if l.Peek() == '@' {
-					l.ConsumeToken('@')
-					l.ConsumeDirective()
-					d := Directive{l.GetBuffer()}
-					l.ConsumeWhitespace()
-					p.Directive = &d
-				}
+				p.Directives = ParseDirectives(l)
 
 				i.Props = append(i.Props, &p)
 			}
@@ -229,13 +252,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 					}
 					q.Resp = r
 
-					if l.Peek() == '@' {
-						l.ConsumeToken('@')
-						l.ConsumeDirective()
-						d := Directive{l.GetBuffer()}
-						l.ConsumeWhitespace()
-						q.Directive = &d
-					}
+					q.Directives = ParseDirectives(l)
 
 					s.Queries = append(s.Queries, &q)
 				}
@@ -286,13 +303,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 
 					m.Resp = r
 
-					if l.Peek() == '@' {
-						l.ConsumeToken('@')
-						l.ConsumeDirective()
-						d := Directive{l.GetBuffer()}
-						l.ConsumeWhitespace()
-						m.Directive = &d
-					}
+					m.Directives = ParseDirectives(l)
 
 					s.Mutations = append(s.Mutations, &m)
 				}
@@ -342,13 +353,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 					}
 					c.Resp = r
 
-					if l.Peek() == '@' {
-						l.ConsumeToken('@')
-						l.ConsumeDirective()
-						d := Directive{l.GetBuffer()}
-						l.ConsumeWhitespace()
-						c.Directive = &d
-					}
+					c.Directives = ParseDirectives(l)
 
 					s.Subscriptions = append(s.Subscriptions, &c)
 				}
@@ -416,13 +421,7 @@ func (s *Schema) ParseSchema(l *Lexer) {
 						}
 					}
 
-					if l.Peek() == '@' {
-						l.ConsumeToken('@')
-						l.ConsumeDirective()
-						d := Directive{l.GetBuffer()}
-						l.ConsumeWhitespace()
-						p.Directive = &d
-					}
+					p.Directives = ParseDirectives(l)
 
 					t.Props = append(t.Props, &p)
 				}
@@ -434,6 +433,39 @@ func (s *Schema) ParseSchema(l *Lexer) {
 	}
 }
 
+func (s *Schema) UniqueDirectiveDefinition(wg *sync.WaitGroup) {
+	defer wg.Done()
+	j := 0
+	seen := make(map[string]struct{}, len(s.DirectiveDefinitions))
+	for _, v := range s.DirectiveDefinitions {
+		if _, ok := seen[v.Name]; ok {
+			for i := 0; i < j; i++ {
+				if s.DirectiveDefinitions[i].Name == v.Name {
+					if reflect.DeepEqual(s.DirectiveDefinitions[i].Args, v.Args) && reflect.DeepEqual(s.DirectiveDefinitions[i].Repeatable, v.Repeatable) && reflect.DeepEqual(s.DirectiveDefinitions[i].Locations, v.Locations) {
+						break
+					} else {
+						rel1, err := GetRelPath(s.Mutations[i].Filename)
+						if err != nil {
+							panic(err)
+						}
+						rel2, err := GetRelPath(v.Filename)
+						if err != nil {
+							panic(err)
+						}
+
+						panic(fmt.Sprintf("Duplicated Directive Definitions: %s(%s, %v:%v) and (%s, %v:%v)", s.DirectiveDefinitions[i].Name, *rel1, s.DirectiveDefinitions[i].Line, s.DirectiveDefinitions[i].Column, *rel2, v.Line, v.Column))
+					}
+				}
+			}
+			continue
+		}
+		seen[v.Name] = struct{}{}
+		s.DirectiveDefinitions[j] = v
+		j++
+	}
+	s.DirectiveDefinitions = s.DirectiveDefinitions[:j]
+}
+
 func (s *Schema) UniqueMutation(wg *sync.WaitGroup) {
 	defer wg.Done()
 	j := 0
@@ -442,7 +474,7 @@ func (s *Schema) UniqueMutation(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Mutations[i].Name == v.Name {
-					if reflect.DeepEqual(s.Mutations[i].Args, v.Args) && reflect.DeepEqual(s.Mutations[i].Resp, v.Resp) && reflect.DeepEqual(s.Mutations[i].Directive, v.Directive) {
+					if reflect.DeepEqual(s.Mutations[i].Args, v.Args) && reflect.DeepEqual(s.Mutations[i].Resp, v.Resp) && reflect.DeepEqual(s.Mutations[i].Directives, v.Directives) {
 						break
 					} else {
 
@@ -476,7 +508,7 @@ func (s *Schema) UniqueQuery(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Queries[i].Name == v.Name {
-					if reflect.DeepEqual(s.Queries[i].Args, v.Args) && reflect.DeepEqual(s.Queries[i].Resp, v.Resp) && reflect.DeepEqual(s.Queries[i].Directive, v.Directive) {
+					if reflect.DeepEqual(s.Queries[i].Args, v.Args) && reflect.DeepEqual(s.Queries[i].Resp, v.Resp) && reflect.DeepEqual(s.Queries[i].Directives, v.Directives) {
 						break
 					} else {
 
@@ -510,7 +542,7 @@ func (s *Schema) UniqueSubscription(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Subscriptions[i].Name == v.Name {
-					if reflect.DeepEqual(s.Subscriptions[i].Args, v.Args) && reflect.DeepEqual(s.Subscriptions[i].Resp, v.Resp) && reflect.DeepEqual(s.Subscriptions[i].Directive, v.Directive) {
+					if reflect.DeepEqual(s.Subscriptions[i].Args, v.Args) && reflect.DeepEqual(s.Subscriptions[i].Resp, v.Resp) && reflect.DeepEqual(s.Subscriptions[i].Directives, v.Directives) {
 						break
 					} else {
 
@@ -544,7 +576,7 @@ func (s *Schema) UniqueTypeName(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.TypeNames[i].Name == v.Name {
-					if reflect.DeepEqual(s.TypeNames[i].ImplTypes, v.ImplTypes) && reflect.DeepEqual(s.TypeNames[i].Props, v.Props) {
+					if reflect.DeepEqual(s.TypeNames[i].ImplTypes, v.ImplTypes) && reflect.DeepEqual(s.TypeNames[i].Props, v.Props) && reflect.DeepEqual(s.TypeNames[i].Directives, v.Directives) {
 						break
 					} else {
 
@@ -578,18 +610,20 @@ func (s *Schema) UniqueScalar(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Scalars[i].Name == v.Name {
-					break
-				} else {
-					rel1, err := GetRelPath(s.Scalars[i].Filename)
-					if err != nil {
-						panic(err)
-					}
-					rel2, err := GetRelPath(v.Filename)
-					if err != nil {
-						panic(err)
-					}
+					if reflect.DeepEqual(s.Scalars[i].Directives, v.Directives) {
+						break
+					} else {
+						rel1, err := GetRelPath(s.Scalars[i].Filename)
+						if err != nil {
+							panic(err)
+						}
+						rel2, err := GetRelPath(v.Filename)
+						if err != nil {
+							panic(err)
+						}
 
-					panic(fmt.Sprintf("Duplicated Scalars: %s(%s, %v:%v) and (%s, %v:%v)", s.Scalars[i].Name, *rel1, s.Scalars[i].Line, s.Scalars[i].Column, *rel2, v.Line, v.Column))
+						panic(fmt.Sprintf("Duplicated Scalars: %s(%s, %v:%v) and (%s, %v:%v)", s.Scalars[i].Name, *rel1, s.Scalars[i].Line, s.Scalars[i].Column, *rel2, v.Line, v.Column))
+					}
 				}
 			}
 			continue
@@ -609,7 +643,7 @@ func (s *Schema) UniqueEnum(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Enums[i].Name == v.Name {
-					if reflect.DeepEqual(s.Enums[i].Fields, v.Fields) {
+					if reflect.DeepEqual(s.Enums[i].Directives, v.Directives) && reflect.DeepEqual(s.Enums[i].EnumValues, v.EnumValues) {
 						break
 					} else {
 
@@ -643,7 +677,7 @@ func (s *Schema) UniqueInterface(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Interfaces[i].Name == v.Name {
-					if reflect.DeepEqual(s.Interfaces[i].Props, v.Props) {
+					if reflect.DeepEqual(s.Interfaces[i].Directives, v.Directives) && reflect.DeepEqual(s.Interfaces[i].Props, v.Props) {
 						break
 					} else {
 
@@ -677,7 +711,7 @@ func (s *Schema) UniqueUnion(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Unions[i].Name == v.Name {
-					if reflect.DeepEqual(s.Unions[i].Fields, v.Fields) {
+					if reflect.DeepEqual(s.Unions[i].Directives, v.Directives) && reflect.DeepEqual(s.Unions[i].Fields, v.Fields) {
 						break
 					} else {
 
@@ -781,10 +815,63 @@ func ParseArgument(l *Lexer) []*Arg {
 					arg.Null = true
 				}
 			}
+			if l.Peek() == '@' {
+				arg.Directives = ParseDirectives(l)
+			}
 
 			args = append(args, &arg)
 		}
 		l.ConsumeToken(')')
 	}
 	return args
+}
+
+func ParseDirectives(l *Lexer) []*Directive {
+	ds := []*Directive{}
+
+	for l.Peek() == '@' {
+		l.ConsumeToken('@')
+		d := Directive{}
+		d.Name = l.ConsumeIdent()
+
+		for l.Peek() == '(' {
+			l.ConsumeToken('(')
+			for l.Peek() != ')' {
+				da := DirectiveArg{}
+				da.Name = l.ConsumeIdent()
+				l.ConsumeToken(':')
+
+				if l.Peek() == '[' {
+					da.IsList = true
+					l.ConsumeToken('[')
+					da.Value = ParseList(l)
+					l.ConsumeToken(']')
+				} else {
+					da.IsList = false
+					if l.Peek() == scanner.String {
+						da.Value = append(da.Value, l.ConsumeString())
+					} else {
+						da.Value = append(da.Value, l.ConsumeIdent())
+					}
+				}
+
+				d.DirectiveArgs = append(d.DirectiveArgs, &da)
+			}
+			l.ConsumeToken(')')
+		}
+		ds = append(ds, &d)
+	}
+	return ds
+}
+
+func ParseList(l *Lexer) []string {
+	ss := []string{}
+	for l.Peek() != ']' {
+		if l.Peek() == scanner.String {
+			ss = append(ss, l.ConsumeString())
+		} else {
+			ss = append(ss, l.ConsumeIdent())
+		}
+	}
+	return ss
 }
