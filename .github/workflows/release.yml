@@ -83,8 +83,8 @@ jobs:
           mv binaries/darwin/gqlmerge gqlmerge-macos
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          files: |
+          artifacts: |
             gqlmerge-linux
             gqlmerge-macos
