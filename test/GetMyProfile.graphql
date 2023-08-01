@@ -1,0 +1,22 @@
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+type Query {
+  getMyProfile: UserResponse!
+}
+
+type UserResponse {
+  ok: Boolean!
+  error: String
+  user: User
+}
+
+type User {
+  id: ID!
+  email: String!
+  fullName: String!
+}
+
+scalar Price

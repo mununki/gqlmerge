@@ -1,4 +1,3 @@
-schema/
 gqlmerge
 
 *.gql
@@ -9,3 +8,4 @@ gqlmerge
 .idea
 
 demo/demo.yml
+!test/*.graphql

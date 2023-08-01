@@ -8,14 +8,24 @@ import (
 )
 
 func TestParseString(t *testing.T) {
-	const src = `(model: "todo/ent.Noder")`
+	const src = `"""
+TEST
+"""`
 
 	var s scanner.Scanner
 	s.Init(strings.NewReader(src))
 
-	for tok := s.Scan(); tok != scanner.EOF; tok = s.Scan() {
-		if tok == scanner.String {
-			fmt.Printf("Found a string: %s\n", s.TokenText())
+	for {
+		next := s.Scan()
+		fmt.Println(s.Pos(), s.Position.Offset)
+		if next == scanner.String {
+			next = s.Next()
+			if next == '"' {
+				fmt.Printf("Found a string: %s\n", s.TokenText())
+			}
+		}
+		if next == scanner.EOF {
+			break
 		}
 	}
 }

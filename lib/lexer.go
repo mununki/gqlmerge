@@ -29,25 +29,18 @@ func (l *Lexer) ConsumeWhitespace() {
 	for {
 		l.next = l.sc.Scan()
 
-		// if l.next == ',' {
-		// 	continue
-		// }
+		if l.next == '#' {
+			l.ConsumeComment()
+			continue
+		}
 
-		// if l.next == '#' {
-		// 	l.ConsumeComment()
-		// 	continue
-		// }
-
-		// // GraphQL comments """ ... """
-		// // due to scanner recognize the GraphQL comments as string
-		// // (first loop) ""
-		// // (second loop) " ... "
-		// // (third loop) ""
-		// // finally buffer gets """ ... """
-		// if l.next == scanner.String {
-		// 	l.ConsumeMultiLineComment()
-		// 	continue
-		// }
+		if l.next == scanner.String {
+			if l.sc.Peek() != '"' {
+				break
+			}
+			l.ConsumeMultiLineComment()
+			continue
+		}
 
 		break
 	}
@@ -64,16 +57,16 @@ func (l *Lexer) ConsumeComment() {
 }
 
 func (l *Lexer) ConsumeMultiLineComment() {
-	next := l.sc.TokenText()
-	l.buffer.WriteString(next)
-}
-
-func (l *Lexer) ConsumeDirective() {
-	l.buffer.WriteString(l.sc.TokenText())
 	for {
-		next := l.sc.Next()
-		if next == '\r' || next == '\n' || next == scanner.EOF {
+		next := l.sc.Scan()
+		if next == scanner.EOF {
 			break
+		}
+		if next == scanner.String {
+			next := l.sc.Next()
+			if next == '"' {
+				break
+			}
 		}
 		l.buffer.WriteRune(next)
 	}
