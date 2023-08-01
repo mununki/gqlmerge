@@ -1,8 +1,9 @@
 name: Release
 
-push:
-  tags:
-    - "*"
+on:
+  push:
+    tags:
+      - "*"
 
 jobs:
   build_linux:
