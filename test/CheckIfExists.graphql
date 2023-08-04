@@ -1,5 +1,5 @@
 type Query {
-  checkIfExists(userId: ID!): CheckIfExistsResponse!
+  checkIfExists(userId: ID!, name: String): CheckIfExistsResponse!
 }
 
 type CheckIfExistsResponse {

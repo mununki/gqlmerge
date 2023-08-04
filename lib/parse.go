@@ -820,6 +820,10 @@ func ParseArgument(l *Lexer) []*Arg {
 			}
 
 			args = append(args, &arg)
+
+			if l.Peek() == ',' {
+				l.ConsumeToken(',')
+			}
 		}
 		l.ConsumeToken(')')
 	}
