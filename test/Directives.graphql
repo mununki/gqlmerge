@@ -1,12 +1,11 @@
 directive @goModel(
-  model: String
-  models: [String!]
+  model: String, models: [String!]
 ) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 
 """
 TEST
 """
-interface Node @goModel(model: "todo/ent.Noder") {
+interface Node @goModel(model: "todo/ent.Noder", models: ["a", "b"]) {
   id: ID! # TEST
 }
 

@@ -860,6 +860,10 @@ func ParseDirectives(l *Lexer) []*Directive {
 				}
 
 				d.DirectiveArgs = append(d.DirectiveArgs, &da)
+
+				if l.Peek() == ',' {
+					l.ConsumeToken(',')
+				}
 			}
 			l.ConsumeToken(')')
 		}
@@ -875,6 +879,9 @@ func ParseList(l *Lexer) []string {
 			ss = append(ss, l.ConsumeString())
 		} else {
 			ss = append(ss, l.ConsumeIdent())
+		}
+		if l.Peek() == ',' {
+			l.ConsumeToken(',')
 		}
 	}
 	return ss
