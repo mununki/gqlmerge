@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -46,8 +47,8 @@ func getSchema(path string) *Schema {
 	}
 
 	for _, file := range sc.Files {
-		l := NewLexer(file)
-		sc.ParseSchema(l)
+		p := NewParser(bufio.NewReader(file), file.Name())
+		sc.Parse(p)
 	}
 
 	return sc

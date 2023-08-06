@@ -30,6 +30,7 @@ type Mutation struct {
 	Args       []*Arg
 	Resp       Resp
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type Query struct {
@@ -38,6 +39,7 @@ type Query struct {
 	Args       []*Arg
 	Resp       Resp
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type Subscription struct {
@@ -46,6 +48,7 @@ type Subscription struct {
 	Args       []*Arg
 	Resp       Resp
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type TypeName struct {
@@ -56,6 +59,7 @@ type TypeName struct {
 	ImplTypes  []string
 	Props      []*Prop
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type Arg struct {
@@ -66,6 +70,7 @@ type Arg struct {
 	IsList     bool
 	IsListNull bool
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type Resp struct {
@@ -83,12 +88,14 @@ type Prop struct {
 	IsList     bool
 	IsListNull bool
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type Scalar struct {
 	BaseFileInfo
 	Name       string
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type Enum struct {
@@ -96,11 +103,13 @@ type Enum struct {
 	Name       string
 	EnumValues []EnumValue
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type EnumValue struct {
 	Name       string
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type Interface struct {
@@ -108,6 +117,7 @@ type Interface struct {
 	Name       string
 	Props      []*Prop
 	Directives []*Directive
+	Comments   *[]string
 }
 
 type Union struct {
@@ -119,8 +129,9 @@ type Union struct {
 
 type Input struct {
 	BaseFileInfo
-	Name  string
-	Props []*Prop
+	Name     string
+	Props    []*Prop
+	Comments *[]string
 }
 
 type DirectiveDefinition struct {
@@ -129,15 +140,18 @@ type DirectiveDefinition struct {
 	Args       []*Arg
 	Repeatable bool
 	Locations  []string
+	Comments   *[]string
 }
 
 type DirectiveArg struct {
-	Name   string
-	Value  []string
-	IsList bool
+	Name     string
+	Value    []string
+	IsList   bool
+	Comments *[]string
 }
 
 type Directive struct {
 	Name          string
 	DirectiveArgs []*DirectiveArg
+	Comments      *[]string
 }
