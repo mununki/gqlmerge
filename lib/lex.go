@@ -281,9 +281,9 @@ func (l *lexer) next() *token {
 		case r == '|':
 			return mkToken(tokBar, "|")
 		case r == '#':
-			return l.singleLineComment(r)
+			return l.comment(r)
 		case r == '"':
-			return l.stringOrMultiLineComments(r)
+			return l.stringOrBlockString(r)
 		case r == '\'':
 			return mkToken(tokQuote, "'")
 		case r == ':':
@@ -395,7 +395,7 @@ func (l *lexer) alphanum(r rune) string {
 	return l.buf.String()
 }
 
-func (l *lexer) singleLineComment(r rune) *token {
+func (l *lexer) comment(r rune) *token {
 	l.buf.Reset()
 	for {
 		l.buf.WriteRune(r)
@@ -406,7 +406,7 @@ func (l *lexer) singleLineComment(r rune) *token {
 	}
 }
 
-func (l *lexer) stringOrMultiLineComments(r rune) *token {
+func (l *lexer) stringOrBlockString(r rune) *token {
 	l.buf.Reset()
 	l.buf.WriteRune(r)
 	r = l.read()
@@ -420,7 +420,7 @@ func (l *lexer) stringOrMultiLineComments(r rune) *token {
 				r = l.read()
 				l.buf.WriteRune(r)
 				if r == EofRune {
-					errorf("Multi line comments literal terminated")
+					errorf("%s:%d:%d: Block string literal terminated", l.filename, l.line, l.col)
 				}
 				if r == '"' {
 					r = l.read()
@@ -430,7 +430,7 @@ func (l *lexer) stringOrMultiLineComments(r rune) *token {
 						l.buf.WriteRune(r)
 						return mkToken(tokMultiLineComment, l.buf.String())
 					}
-					errorf("Multi line comments literal terminated")
+					errorf("%s:%d:%d: Block string literal terminated", l.filename, l.line, l.col)
 				}
 			}
 		}
@@ -442,7 +442,7 @@ func (l *lexer) stringOrMultiLineComments(r rune) *token {
 		r = l.read()
 		l.buf.WriteRune(r)
 		if r == '\n' || r == EofRune {
-			errorf("String literal terminated")
+			errorf("%s:%d:%d: String literal terminated", l.filename, l.line, l.col)
 		}
 		if r == '"' {
 			return mkToken(tokString, l.buf.String())

@@ -13,7 +13,7 @@ type UserResponse {
   user: User
 }
 
-type User {
+type User implements Node & Owner {
   id: ID!
   email: String!
   fullName: String!

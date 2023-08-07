@@ -477,6 +477,8 @@ func (s *Schema) Parse(p *Parser) {
 						name, _ = p.lex.consumeIdent()
 						t.ImplTypes = append(t.ImplTypes, name.String())
 					}
+					p.lex.consumeToken(tokLBrace)
+					fallthrough
 				case tokLBrace:
 					for p.lex.peek() != '}' {
 						pr := Prop{}
@@ -526,6 +528,8 @@ func (s *Schema) Parse(p *Parser) {
 
 					s.TypeNames = append(s.TypeNames, &t)
 					p.lex.consumeToken(tokRBrace)
+				default:
+					errorf(`%s:%d:%d: unexpected "%s", expected implments or {`, p.lex.filename, p.lex.line, p.lex.col, next.String())
 				}
 			}
 		}
@@ -688,7 +692,7 @@ func (s *Schema) UniqueTypeName(wg *sync.WaitGroup) {
 							panic(err)
 						}
 
-						panic(fmt.Sprintf("Duplicated Types: %s(%s, %v:%v) and (%s, %v:%v)", s.TypeNames[i].Name, *rel1, s.TypeNames[i].Line, s.TypeNames[i].Column, *rel2, v.Line, v.Column))
+						panic(fmt.Sprintf("Duplicated Types: %s(%s:%v:%v) and (%s:%v:%v)", s.TypeNames[i].Name, *rel1, s.TypeNames[i].Line, s.TypeNames[i].Column, *rel2, v.Line, v.Column))
 					}
 				}
 			}
