@@ -223,7 +223,6 @@ func (l *lexer) skipSpace() rune {
 func (l *lexer) read() rune {
 	if l.peeking {
 		l.peeking = false
-		l.counter(l.peekRune)
 		return l.peekRune
 	}
 	return l.nextRune()
@@ -453,7 +452,7 @@ func (l *lexer) stringOrMultiLineComments(r rune) *token {
 
 func (l *lexer) endToken() {
 	if r := l.peek(); isAlphanum(r) || !isSpace(r) && r != '(' && r != ')' && r != '[' && r != ']' && r != '{' && r != '}' && r != ':' && r != '!' && r != ',' && r != EofRune {
-		errorf("invalid token after %s", &l.buf)
+		errorf("%s:%d:%d: invalid token after %s", l.filename, l.line, l.col, &l.buf)
 	}
 }
 
