@@ -1,5 +1,11 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
 type Query {
   checkIfExists(userId: ID!, name: String): CheckIfExistsResponse!
+  getMyProfile: UserResponse!
 }
 
 type CheckIfExistsResponse {
@@ -12,6 +18,9 @@ type User implements Node & Owner {
   id: ID!
   email: String!
   fullName: String!
+  avatar: Url
 }
 
 scalar Price
+
+union Response = Success | Failure

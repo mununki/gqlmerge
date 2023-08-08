@@ -11,23 +11,16 @@ type MergedSchema struct {
 
 func (ms *MergedSchema) StitchSchema(s *Schema) string {
 	numOfDirs := len(s.DirectiveDefinitions)
-	numOfQurs := len(s.Queries)
-	numOfMuts := len(s.Mutations)
-	numOfSubs := len(s.Subscriptions)
 
+	// FIXME
 	ms.buf.WriteString("schema {\n")
-	if numOfQurs > 0 {
-		ms.addIndent(1)
-		ms.buf.WriteString("query: Query\n")
-	}
-	if numOfMuts > 0 {
-		ms.addIndent(1)
-		ms.buf.WriteString("mutation: Mutation\n")
-	}
-	if numOfSubs > 0 {
-		ms.addIndent(1)
-		ms.buf.WriteString("subscription: Subscription\n")
-	}
+	ms.addIndent(1)
+	ms.buf.WriteString("query: Query\n")
+	ms.addIndent(1)
+	ms.buf.WriteString("mutation: Mutation\n")
+	ms.addIndent(1)
+	ms.buf.WriteString("subscription: Subscription\n")
+
 	ms.buf.WriteString("}\n\n")
 
 	if numOfDirs > 0 {
@@ -65,146 +58,14 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.buf.WriteString("\n\n")
 	}
 
-	if numOfQurs > 0 {
-		ms.buf.WriteString(`type Query {
-`)
-		for _, q := range s.Queries {
-			ms.addIndent(1)
-			ms.buf.WriteString(q.Name)
-			if l := len(q.Args); l > 0 {
-				ms.buf.WriteString("(")
-				if l > 2 {
-					ms.buf.WriteString("\n")
-				}
-
-				for i, a := range q.Args {
-					ms.stitchArgument(a, l, i)
-				}
-
-				if l > 2 {
-					ms.buf.WriteString("\n")
-					ms.addIndent(1)
-				}
-				ms.buf.WriteString(")")
-			}
-			ms.buf.WriteString(": ")
-			if q.Resp.IsList {
-				ms.buf.WriteString("[")
-			}
-			ms.buf.WriteString(q.Resp.Name)
-			if !q.Resp.Null {
-				ms.buf.WriteString("!")
-			}
-			if q.Resp.IsList {
-				ms.buf.WriteString("]")
-			}
-			if q.Resp.IsList && !q.Resp.IsListNull {
-				ms.buf.WriteString("!")
-			}
-
-			ms.stitchDirectives(q.Directives)
-
-			ms.buf.WriteString("\n")
-		}
-		ms.buf.WriteString("}\n\n")
-	}
-
-	if numOfMuts > 0 {
-		ms.buf.WriteString(`type Mutation {
-`)
-		for _, m := range s.Mutations {
-			ms.addIndent(1)
-			ms.buf.WriteString(m.Name)
-			if l := len(m.Args); l > 0 {
-				ms.buf.WriteString("(")
-				if l > 2 {
-					ms.buf.WriteString("\n")
-				}
-
-				for i, a := range m.Args {
-					ms.stitchArgument(a, l, i)
-				}
-
-				if l > 2 {
-					ms.buf.WriteString("\n")
-					ms.addIndent(1)
-				}
-				ms.buf.WriteString(")")
-			}
-			ms.buf.WriteString(": ")
-			if m.Resp.IsList {
-				ms.buf.WriteString("[")
-			}
-			ms.buf.WriteString(m.Resp.Name)
-			if !m.Resp.Null {
-				ms.buf.WriteString("!")
-			}
-			if m.Resp.IsList {
-				ms.buf.WriteString("]")
-			}
-			if m.Resp.IsList && !m.Resp.IsListNull {
-				ms.buf.WriteString("!")
-			}
-
-			ms.stitchDirectives(m.Directives)
-
-			ms.buf.WriteString("\n")
-		}
-		ms.buf.WriteString("}\n\n")
-	}
-
-	if numOfSubs > 0 {
-		ms.buf.WriteString(`type Subscription {
-`)
-		for _, c := range s.Subscriptions {
-			ms.addIndent(1)
-			ms.buf.WriteString(c.Name)
-			if l := len(c.Args); l > 0 {
-				ms.buf.WriteString("(")
-				if l > 2 {
-					ms.buf.WriteString("\n")
-				}
-
-				for i, a := range c.Args {
-					ms.stitchArgument(a, l, i)
-				}
-
-				if l > 2 {
-					ms.buf.WriteString("\n")
-					ms.addIndent(1)
-				}
-				ms.buf.WriteString(")")
-			}
-			ms.buf.WriteString(": ")
-			if c.Resp.IsList {
-				ms.buf.WriteString("[")
-			}
-			ms.buf.WriteString(c.Resp.Name)
-			if !c.Resp.Null {
-				ms.buf.WriteString("!")
-			}
-			if c.Resp.IsList {
-				ms.buf.WriteString("]")
-			}
-			if c.Resp.IsList && !c.Resp.IsListNull {
-				ms.buf.WriteString("!")
-			}
-
-			ms.stitchDirectives(c.Directives)
-
-			ms.buf.WriteString("\n")
-		}
-		ms.buf.WriteString("}\n\n")
-	}
-
-	for i, t := range s.TypeNames {
+	for i, t := range s.Types {
 		ms.buf.WriteString("type ")
 		ms.buf.WriteString(t.Name)
 		if len(t.ImplTypes) > 0 {
 			ms.buf.WriteString(" implements " + strings.Join(t.ImplTypes, " & "))
 		}
 		ms.buf.WriteString(" {\n")
-		for _, p := range t.Props {
+		for _, p := range t.Fields {
 			ms.addIndent(1)
 			ms.buf.WriteString(p.Name)
 
@@ -243,7 +104,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 			ms.buf.WriteString("\n")
 		}
 		ms.buf.WriteString("}\n")
-		if i != len(s.TypeNames)-1 {
+		if i != len(s.Types)-1 {
 			ms.buf.WriteString("\n")
 		}
 	}
@@ -281,7 +142,7 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.stitchDirectives(i.Directives)
 		ms.buf.WriteString(" {\n")
 
-		for _, p := range i.Props {
+		for _, p := range i.Fields {
 			ms.addIndent(1)
 			ms.buf.WriteString(p.Name)
 
@@ -330,14 +191,14 @@ func (ms *MergedSchema) StitchSchema(s *Schema) string {
 		ms.buf.WriteString("union " + u.Name)
 		ms.stitchDirectives(u.Directives)
 		ms.buf.WriteString(" = ")
-		fields := strings.Join(u.Fields, " | ")
-		ms.buf.WriteString(fields + "\n\n")
+		types := strings.Join(u.Types, " | ")
+		ms.buf.WriteString(types + "\n\n")
 	}
 
 	for j, i := range s.Inputs {
 		ms.buf.WriteString("input " + i.Name + " {\n")
 
-		for _, p := range i.Props {
+		for _, p := range i.Fields {
 			ms.addIndent(1)
 			ms.buf.WriteString(p.Name + ": ")
 			if p.IsList {

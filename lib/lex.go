@@ -44,10 +44,6 @@ const (
 	tokString                      // "..."
 	tokOn                          // on
 	tokRepeatable                  // repeatable
-	tokSchema                      // schema
-	tokQuery                       // Query
-	tokMutation                    // Mutation
-	tokSubscription                // Subscription
 	tokDirective                   // directive
 	tokType                        // type
 	tokInterface                   // interface
@@ -56,6 +52,7 @@ const (
 	tokEnum                        // enum
 	tokScalar                      // scalar
 	tokUnion                       // union
+	tokSchema                      // schema
 )
 
 func (typ tokenType) String() string {
@@ -124,14 +121,6 @@ func (typ tokenType) String() string {
 		return "on"
 	case tokRepeatable:
 		return "repeatable"
-	case tokSchema:
-		return "schema"
-	case tokQuery:
-		return "Query"
-	case tokMutation:
-		return "Mutation"
-	case tokSubscription:
-		return "Subscription"
 	case tokDirective:
 		return "directive"
 	case tokType:
@@ -148,6 +137,8 @@ func (typ tokenType) String() string {
 		return "scalar"
 	case tokUnion:
 		return "union"
+	case tokSchema:
+		return "schema"
 	default:
 		return "unknown token"
 	}
@@ -324,12 +315,6 @@ func (l *lexer) next() *token {
 				return mkToken(tokOn, "on")
 			case "repeatable":
 				return mkToken(tokRepeatable, "repeatable")
-			case "Query":
-				return mkToken(tokQuery, "Query")
-			case "Mutation":
-				return mkToken(tokMutation, "Mutation")
-			case "Subscription":
-				return mkToken(tokSubscription, "Subscription")
 			case "directive":
 				return mkToken(tokDirective, "directive")
 			case "type":
@@ -346,6 +331,8 @@ func (l *lexer) next() *token {
 				return mkToken(tokScalar, "scalar")
 			case "union":
 				return mkToken(tokUnion, "union")
+			case "schema":
+				return mkToken(tokSchema, "schema")
 			default:
 				return mkToken(tokIdent, string(s))
 			}

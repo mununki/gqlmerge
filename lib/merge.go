@@ -59,11 +59,9 @@ func joinSchemas(schemas []Schema) *Schema {
 
 	for _, s := range schemas {
 		schema.Files = append(schema.Files, s.Files...)
+		schema.SchemaDefinitions = append(s.SchemaDefinitions, s.SchemaDefinitions...)
 		schema.DirectiveDefinitions = append(schema.DirectiveDefinitions, s.DirectiveDefinitions...)
-		schema.Mutations = append(schema.Mutations, s.Mutations...)
-		schema.Queries = append(schema.Queries, s.Queries...)
-		schema.Subscriptions = append(schema.Subscriptions, s.Subscriptions...)
-		schema.TypeNames = append(schema.TypeNames, s.TypeNames...)
+		schema.Types = append(schema.Types, s.Types...)
 		schema.Scalars = append(schema.Scalars, s.Scalars...)
 		schema.Enums = append(schema.Enums, s.Enums...)
 		schema.Interfaces = append(schema.Interfaces, s.Interfaces...)
@@ -72,13 +70,11 @@ func joinSchemas(schemas []Schema) *Schema {
 	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(10)
+	wg.Add(8)
 
+	go schema.mergeSchemaDefinition(&wg)
 	go schema.UniqueDirectiveDefinition(&wg)
-	go schema.UniqueMutation(&wg)
-	go schema.UniqueQuery(&wg)
-	go schema.UniqueSubscription(&wg)
-	go schema.UniqueTypeName(&wg)
+	go schema.MergeTypeName(&wg)
 	go schema.UniqueScalar(&wg)
 	go schema.UniqueEnum(&wg)
 	go schema.UniqueInterface(&wg)

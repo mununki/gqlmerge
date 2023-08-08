@@ -42,7 +42,7 @@ func (p *Parser) parseArgs() []*Arg {
 			arg := Arg{}
 			param, comments := p.lex.consumeIdent()
 			arg.Param = param.String()
-			arg.Comments = comments
+			arg.Descriptions = comments
 			p.lex.consumeToken(tokColon)
 
 			if p.lex.peek() == '[' {
@@ -103,7 +103,7 @@ func (p *Parser) parseDirectives() []*Directive {
 		d := Directive{}
 		name, comments := p.lex.consumeIdent()
 		d.Name = name.String()
-		d.Comments = comments
+		d.Descriptions = comments
 
 		for p.lex.peek() == '(' {
 			p.lex.consumeToken(tokLParen)
@@ -111,7 +111,7 @@ func (p *Parser) parseDirectives() []*Directive {
 				da := DirectiveArg{}
 				name, comments = p.lex.consumeIdent()
 				da.Name = name.String()
-				da.Comments = comments
+				da.Descriptions = comments
 				p.lex.consumeToken(tokColon)
 
 				if p.lex.peek() == '[' {

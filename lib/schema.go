@@ -67,14 +67,32 @@ func (s *Schema) Parse(p *Parser) {
 		}
 		switch tok.typ {
 		case tokSchema:
-			// skip the schema {...}
-			// it will be generated after parsing all
-			for {
-				t := p.lex.next()
-				if t.typ == tokRBrace {
-					break
+			sd := SchemaDefinition{}
+			sd.Filename = p.lex.filename
+			sd.Line = p.lex.line
+			sd.Column = p.lex.col
+			sd.Descriptions = p.bufString()
+			p.lex.consumeToken(tokLBrace)
+			for p.lex.peek() != '}' {
+				op := p.lex.next()
+				p.lex.consumeToken(tokColon)
+				switch op.String() {
+				case "query":
+					q := p.lex.next().String()
+					sd.Query = &q
+				case "mutation":
+					m := p.lex.next().String()
+					sd.Mutation = &m
+				case "subscription":
+					s := p.lex.next().String()
+					sd.Subscription = &s
+				default:
+					errorf(`%s:%d:%d: unexpected "%s", one of operation types expected`, p.lex.filename, p.lex.line, p.lex.col, op.String())
 				}
+				p.lex.skipSpace()
 			}
+			p.lex.consumeToken(tokRBrace)
+			s.SchemaDefinitions = append(s.SchemaDefinitions, &sd)
 
 		case tokString:
 			// description
@@ -91,7 +109,7 @@ func (s *Schema) Parse(p *Parser) {
 			d.Filename = p.lex.filename
 			d.Line = p.lex.line
 			d.Column = p.lex.col
-			d.Comments = p.bufString()
+			d.Descriptions = p.bufString()
 			p.lex.consumeToken(tokAt)
 			name, _ := p.lex.consumeIdent()
 			d.Name = name.String()
@@ -120,10 +138,14 @@ func (s *Schema) Parse(p *Parser) {
 			c.Filename = p.lex.filename
 			c.Line = p.lex.line
 			c.Column = p.lex.col
-			c.Comments = p.bufString()
+			c.Descriptions = p.bufString()
 			name, _ := p.lex.consumeIdent()
 			c.Name = name.String()
 			c.Directives = p.parseDirectives()
+			sc := p.parseSingleLineComment()
+			if sc != nil {
+				c.Comments = append(c.Comments, *sc)
+			}
 			s.Scalars = append(s.Scalars, &c)
 
 		case tokEnum:
@@ -131,7 +153,7 @@ func (s *Schema) Parse(p *Parser) {
 			e.Filename = p.lex.filename
 			e.Line = p.lex.line
 			e.Column = p.lex.col
-			e.Comments = p.bufString()
+			e.Descriptions = p.bufString()
 			name, _ := p.lex.consumeIdent()
 			e.Name = name.String()
 			e.Directives = p.parseDirectives()
@@ -140,8 +162,12 @@ func (s *Schema) Parse(p *Parser) {
 				ev := EnumValue{}
 				name, comments := p.lex.consumeIdent()
 				ev.Name = name.String()
-				ev.Comments = comments
+				ev.Descriptions = comments
 				ev.Directives = p.parseDirectives()
+				sc := p.parseSingleLineComment()
+				if sc != nil {
+					ev.Comments = append(ev.Comments, *sc)
+				}
 				e.EnumValues = append(e.EnumValues, ev)
 			}
 			p.lex.consumeToken(tokRBrace)
@@ -154,60 +180,62 @@ func (s *Schema) Parse(p *Parser) {
 			i.Column = p.lex.col
 			name, _ := p.lex.consumeIdent()
 			i.Name = name.String()
-			i.Comments = p.bufString()
+			i.Descriptions = p.bufString()
 			i.Directives = p.parseDirectives()
 
 			p.lex.consumeToken(tokLBrace)
 			for p.lex.peek() != '}' {
-				pr := Prop{}
+				fd := Field{}
+				fd.Filename = p.lex.filename
+				fd.Line = p.lex.line
+				fd.Column = p.lex.col
 				name, comments := p.lex.consumeIdent()
-				pr.Name = name.String()
-				pr.Comments = comments
+				fd.Name = name.String()
+				fd.Descriptions = comments
 
-				pr.Args = p.parseArgs()
+				fd.Args = p.parseArgs()
 
 				p.lex.consumeToken(tokColon)
 
 				if p.lex.peek() == '[' {
-					pr.IsList = true
+					fd.IsList = true
 					p.lex.consumeToken('[')
 					name, _ = p.lex.consumeIdent()
-					pr.Type = name.String()
+					fd.Type = name.String()
 					if p.lex.peek() == '!' {
-						pr.Null = false
+						fd.Null = false
 						p.lex.consumeToken(tokBang)
 					} else {
-						pr.Null = true
+						fd.Null = true
 					}
 					p.lex.consumeToken(tokRBracket)
 					if p.lex.peek() == '!' {
-						pr.IsListNull = false
+						fd.IsListNull = false
 						p.lex.consumeToken(tokBang)
 					} else {
-						pr.IsListNull = true
+						fd.IsListNull = true
 					}
 				} else {
-					pr.IsList = false
-					pr.IsListNull = false
+					fd.IsList = false
+					fd.IsListNull = false
 					name, _ = p.lex.consumeIdent()
-					pr.Type = name.String()
+					fd.Type = name.String()
 					if p.lex.peek() == '!' {
-						pr.Null = false
+						fd.Null = false
 						p.lex.consumeToken(tokBang)
 					} else {
-						pr.Null = true
+						fd.Null = true
 					}
 				}
+
+				fd.Directives = p.parseDirectives()
 
 				sc := p.parseSingleLineComment()
 				if sc != nil {
-					cs := append(*pr.Comments, *sc)
-					pr.Comments = &cs
+					fd.Comments = append(fd.Comments, *sc)
 				}
 
-				pr.Directives = p.parseDirectives()
-
-				i.Props = append(i.Props, &pr)
+				i.Fields = append(i.Fields, &fd)
 			}
 
 			s.Interfaces = append(s.Interfaces, &i)
@@ -225,9 +253,9 @@ func (s *Schema) Parse(p *Parser) {
 			for p.lex.peek() != '\n' || p.lex.peek() != '\r' || p.lex.peek() != EofRune {
 				name, _ = p.lex.consumeIdent()
 				// FIXME comments?
-				u.Fields = append(u.Fields, name.String())
+				u.Types = append(u.Types, name.String())
 				if p.lex.peek() == '|' {
-					p.lex.consumeToken(tokBang)
+					p.lex.consumeToken(tokBar)
 				} else {
 					break
 				}
@@ -241,297 +269,197 @@ func (s *Schema) Parse(p *Parser) {
 			i.Column = p.lex.col
 			name, _ := p.lex.consumeIdent()
 			i.Name = name.String()
-			i.Comments = p.bufString()
+			i.Descriptions = p.bufString()
 
 			p.lex.consumeToken(tokLBrace)
 
 			for p.lex.peek() != '}' {
-				pr := Prop{}
+				fd := Field{}
+				fd.Filename = p.lex.filename
+				fd.Line = p.lex.line
+				fd.Column = p.lex.col
 				name, comments := p.lex.consumeIdent()
-				pr.Name = name.String()
-				pr.Comments = comments
+				fd.Name = name.String()
+				fd.Descriptions = comments
 				p.lex.consumeToken(tokColon)
 
 				if p.lex.peek() == '[' {
-					pr.IsList = true
+					fd.IsList = true
 					p.lex.consumeToken(tokLBracket)
 					name, _ = p.lex.consumeIdent()
-					pr.Type = name.String()
+					fd.Type = name.String()
 					if p.lex.peek() == '!' {
-						pr.Null = false
+						fd.Null = false
 						p.lex.consumeToken(tokBang)
 					} else {
-						pr.Null = true
+						fd.Null = true
 					}
 					p.lex.consumeToken(tokRBracket)
 					if p.lex.peek() == '!' {
-						pr.IsListNull = false
+						fd.IsListNull = false
 						p.lex.consumeToken(tokBang)
 					} else {
-						pr.IsListNull = true
+						fd.IsListNull = true
 					}
 				} else {
-					pr.IsList = false
-					pr.IsListNull = false
+					fd.IsList = false
+					fd.IsListNull = false
 					name, _ = p.lex.consumeIdent()
-					pr.Type = name.String()
+					fd.Type = name.String()
 					if p.lex.peek() == '!' {
-						pr.Null = false
+						fd.Null = false
 						p.lex.consumeToken(tokBang)
 					} else {
-						pr.Null = true
+						fd.Null = true
 					}
 				}
 
-				pr.Directives = p.parseDirectives()
+				fd.Directives = p.parseDirectives()
 
-				i.Props = append(i.Props, &pr)
+				sc := p.parseSingleLineComment()
+				if sc != nil {
+					fd.Comments = append(fd.Comments, *sc)
+				}
+
+				i.Fields = append(i.Fields, &fd)
 			}
 
 			s.Inputs = append(s.Inputs, &i)
 			p.lex.consumeToken(tokRBrace)
 
 		case tokType:
-			tok := p.lex.next()
-			switch tok.typ {
-			case tokQuery:
+			t := Type{}
+			t.Filename = p.lex.filename
+			t.Line = p.lex.line
+			t.Column = p.lex.col
+			name, _ := p.lex.consumeIdent()
+			t.Name = name.String()
+			t.Descriptions = p.bufString()
+
+			next := p.lex.next()
+			switch next.typ {
+			case tokImplements:
+				t.Impl = true
+				name, _ := p.lex.consumeIdent()
+				t.ImplTypes = append(t.ImplTypes, name.String())
+				for p.lex.peek() == '&' {
+					p.lex.consumeToken(tokAmpersand)
+					name, _ = p.lex.consumeIdent()
+					t.ImplTypes = append(t.ImplTypes, name.String())
+				}
 				p.lex.consumeToken(tokLBrace)
-
+				fallthrough
+			case tokLBrace:
 				for p.lex.peek() != '}' {
-					q := Query{}
-					q.Filename = p.lex.filename
-					q.Line = p.lex.line
-					q.Column = p.lex.col
+					fd := Field{}
+					fd.Filename = p.lex.filename
+					fd.Line = p.lex.line
+					fd.Column = p.lex.col
 					name, comments := p.lex.consumeIdent()
-					q.Name = name.String()
-					q.Comments = comments
+					fd.Name = name.String()
+					fd.Descriptions = comments
 
-					q.Args = p.parseArgs()
+					fd.Args = p.parseArgs()
 
 					p.lex.consumeToken(tokColon)
-					r := Resp{}
+
 					if p.lex.peek() == '[' {
-						r.IsList = true
+						fd.IsList = true
 						p.lex.consumeToken(tokLBracket)
 						name, _ = p.lex.consumeIdent()
-						r.Name = name.String()
+						fd.Type = name.String()
 						if p.lex.peek() == '!' {
-							r.Null = false
+							fd.Null = false
 							p.lex.consumeToken(tokBang)
 						} else {
-							r.Null = true
+							fd.Null = true
 						}
 						p.lex.consumeToken(tokRBracket)
 						if p.lex.peek() == '!' {
-							r.IsListNull = false
+							fd.IsListNull = false
 							p.lex.consumeToken(tokBang)
 						} else {
-							r.IsListNull = true
+							fd.IsListNull = true
 						}
 					} else {
-						r.IsList = false
-						r.IsListNull = false
+						fd.IsList = false
+						fd.IsListNull = false
 						name, _ = p.lex.consumeIdent()
-						r.Name = name.String()
+						fd.Type = name.String()
 						if p.lex.peek() == '!' {
-							r.Null = false
+							fd.Null = false
 							p.lex.consumeToken(tokBang)
 						} else {
-							r.Null = true
+							fd.Null = true
 						}
 					}
-					q.Resp = r
-					q.Directives = p.parseDirectives()
+
+					fd.Directives = p.parseDirectives()
+
 					sc := p.parseSingleLineComment()
 					if sc != nil {
-						cs := append(*q.Comments, *sc)
-						q.Comments = &cs
-					}
-					s.Queries = append(s.Queries, &q)
-				}
-				p.lex.consumeToken(tokRBrace)
-
-			case tokMutation:
-				p.lex.consumeToken(tokLBrace)
-
-				for p.lex.peek() != '}' {
-					m := Mutation{}
-					m.Filename = p.lex.filename
-					m.Line = p.lex.line
-					m.Column = p.lex.col
-					name, comments := p.lex.consumeIdent()
-					m.Name = name.String()
-					m.Comments = comments
-
-					m.Args = p.parseArgs()
-
-					p.lex.consumeToken(tokColon)
-					r := Resp{}
-					if p.lex.peek() == '[' {
-						r.IsList = true
-						p.lex.consumeToken(tokLBracket)
-						name, _ = p.lex.consumeIdent()
-						r.Name = name.String()
-						if p.lex.peek() == '!' {
-							r.Null = false
-							p.lex.consumeToken(tokBang)
-						} else {
-							r.Null = true
-						}
-						p.lex.consumeToken(tokRBracket)
-						if p.lex.peek() == '!' {
-							r.IsListNull = false
-							p.lex.consumeToken(tokBang)
-						} else {
-							r.IsListNull = true
-						}
-					} else {
-						r.IsList = false
-						r.IsListNull = false
-						name, _ = p.lex.consumeIdent()
-						r.Name = name.String()
-						if p.lex.peek() == '!' {
-							r.Null = false
-							p.lex.consumeToken(tokBang)
-						} else {
-							r.Null = true
-						}
+						fd.Comments = append(fd.Comments, *sc)
 					}
 
-					m.Resp = r
-					m.Directives = p.parseDirectives()
-					s.Mutations = append(s.Mutations, &m)
+					t.Fields = append(t.Fields, &fd)
 				}
+
+				s.Types = append(s.Types, &t)
 				p.lex.consumeToken(tokRBrace)
-
-			case tokSubscription:
-				p.lex.consumeToken(tokLBrace)
-
-				for p.lex.peek() != '}' {
-					c := Subscription{}
-					c.Filename = p.lex.filename
-					c.Line = p.lex.line
-					c.Column = p.lex.col
-					name, comments := p.lex.consumeIdent()
-					c.Name = name.String()
-					c.Comments = comments
-
-					c.Args = p.parseArgs()
-
-					p.lex.consumeToken(tokColon)
-					r := Resp{}
-					if p.lex.peek() == '[' {
-						r.IsList = true
-						p.lex.consumeToken(tokLBracket)
-						name, _ = p.lex.consumeIdent()
-						r.Name = name.String()
-						if p.lex.peek() == '!' {
-							r.Null = false
-							p.lex.consumeToken(tokBang)
-						} else {
-							r.Null = true
-						}
-						p.lex.consumeToken(tokRBracket)
-						if p.lex.peek() == '!' {
-							r.IsListNull = false
-							p.lex.consumeToken(tokBang)
-						} else {
-							r.IsListNull = true
-						}
-					} else {
-						r.IsList = false
-						r.IsListNull = false
-						name, _ = p.lex.consumeIdent()
-						r.Name = name.String()
-						if p.lex.peek() == '!' {
-							r.Null = false
-							p.lex.consumeToken(tokBang)
-						} else {
-							r.Null = true
-						}
-					}
-
-					c.Resp = r
-					c.Directives = p.parseDirectives()
-					s.Subscriptions = append(s.Subscriptions, &c)
-					p.lex.skipSpace()
-				}
-				p.lex.consumeToken(tokRBrace)
-
 			default:
-				t := TypeName{}
-				t.Filename = p.lex.filename
-				t.Line = p.lex.line
-				t.Column = p.lex.col
-				t.Name = tok.String()
-				t.Comments = p.bufString()
-
-				next := p.lex.next()
-				switch next.typ {
-				case tokImplements:
-					t.Impl = true
-					name, _ := p.lex.consumeIdent()
-					t.ImplTypes = append(t.ImplTypes, name.String())
-					for p.lex.peek() == '&' {
-						p.lex.consumeToken(tokAmpersand)
-						name, _ = p.lex.consumeIdent()
-						t.ImplTypes = append(t.ImplTypes, name.String())
-					}
-					p.lex.consumeToken(tokLBrace)
-					fallthrough
-				case tokLBrace:
-					for p.lex.peek() != '}' {
-						pr := Prop{}
-						name, comments := p.lex.consumeIdent()
-						pr.Name = name.String()
-						pr.Comments = comments
-
-						pr.Args = p.parseArgs()
-
-						p.lex.consumeToken(tokColon)
-
-						if p.lex.peek() == '[' {
-							pr.IsList = true
-							p.lex.consumeToken(tokLBracket)
-							name, _ = p.lex.consumeIdent()
-							pr.Type = name.String()
-							if p.lex.peek() == '!' {
-								pr.Null = false
-								p.lex.consumeToken(tokBang)
-							} else {
-								pr.Null = true
-							}
-							p.lex.consumeToken(tokRBracket)
-							if p.lex.peek() == '!' {
-								pr.IsListNull = false
-								p.lex.consumeToken(tokBang)
-							} else {
-								pr.IsListNull = true
-							}
-						} else {
-							pr.IsList = false
-							pr.IsListNull = false
-							name, _ = p.lex.consumeIdent()
-							pr.Type = name.String()
-							if p.lex.peek() == '!' {
-								pr.Null = false
-								p.lex.consumeToken(tokBang)
-							} else {
-								pr.Null = true
-							}
-						}
-
-						pr.Directives = p.parseDirectives()
-
-						t.Props = append(t.Props, &pr)
-					}
-
-					s.TypeNames = append(s.TypeNames, &t)
-					p.lex.consumeToken(tokRBrace)
-				default:
-					errorf(`%s:%d:%d: unexpected "%s", expected implments or {`, p.lex.filename, p.lex.line, p.lex.col, next.String())
-				}
+				errorf(`%s:%d:%d: unexpected "%s", expected implments or {`, p.lex.filename, p.lex.line, p.lex.col, next.String())
 			}
+
+		}
+	}
+}
+
+func (s *Schema) mergeSchemaDefinition(wg *sync.WaitGroup) {
+	defer wg.Done()
+	sd := SchemaDefinition{}
+	for i, v := range s.SchemaDefinitions {
+		if i == 0 {
+			sd = *v
+			continue
+		}
+		if sd.Query == nil {
+			sd.Query = v.Query
+		} else if v.Query != nil && *sd.Query != *v.Query {
+			rel1, err := GetRelPath(sd.Filename)
+			if err != nil {
+				panic(err)
+			}
+			rel2, err := GetRelPath(v.Filename)
+			if err != nil {
+				panic(err)
+			}
+			errorf("Duplicated Directive Definitions: %s(%s:%v:%v) and (%s:%v:%v)", *sd.Query, *rel1, sd.Line, sd.Column, *rel2, v.Line, v.Column)
+		}
+		if sd.Mutation == nil {
+			sd.Mutation = v.Mutation
+		} else if v.Mutation != nil && *sd.Mutation != *v.Mutation {
+			rel1, err := GetRelPath(sd.Filename)
+			if err != nil {
+				panic(err)
+			}
+			rel2, err := GetRelPath(v.Filename)
+			if err != nil {
+				panic(err)
+			}
+			errorf("Duplicated Directive Definitions: %s(%s:%v:%v) and (%s:%v:%v)", *sd.Mutation, *rel1, sd.Line, sd.Column, *rel2, v.Line, v.Column)
+		}
+		if sd.Subscription == nil {
+			sd.Subscription = v.Subscription
+		} else if v.Subscription != nil && *sd.Subscription != *v.Subscription {
+			rel1, err := GetRelPath(sd.Filename)
+			if err != nil {
+				panic(err)
+			}
+			rel2, err := GetRelPath(v.Filename)
+			if err != nil {
+				panic(err)
+			}
+			errorf("Duplicated Directive Definitions: %s(%s:%v:%v) and (%s:%v:%v)", *sd.Subscription, *rel1, sd.Line, sd.Column, *rel2, v.Line, v.Column)
 		}
 	}
 }
@@ -547,7 +475,7 @@ func (s *Schema) UniqueDirectiveDefinition(wg *sync.WaitGroup) {
 					if reflect.DeepEqual(s.DirectiveDefinitions[i].Args, v.Args) && reflect.DeepEqual(s.DirectiveDefinitions[i].Repeatable, v.Repeatable) && reflect.DeepEqual(s.DirectiveDefinitions[i].Locations, v.Locations) {
 						break
 					} else {
-						rel1, err := GetRelPath(s.Mutations[i].Filename)
+						rel1, err := GetRelPath(s.DirectiveDefinitions[i].Filename)
 						if err != nil {
 							panic(err)
 						}
@@ -556,7 +484,7 @@ func (s *Schema) UniqueDirectiveDefinition(wg *sync.WaitGroup) {
 							panic(err)
 						}
 
-						panic(fmt.Sprintf("Duplicated Directive Definitions: %s(%s, %v:%v) and (%s, %v:%v)", s.DirectiveDefinitions[i].Name, *rel1, s.DirectiveDefinitions[i].Line, s.DirectiveDefinitions[i].Column, *rel2, v.Line, v.Column))
+						errorf("Duplicated Directive Definitions: %s(%s:%v:%v) and (%s:%v:%v)", s.DirectiveDefinitions[i].Name, *rel1, s.DirectiveDefinitions[i].Line, s.DirectiveDefinitions[i].Column, *rel2, v.Line, v.Column)
 					}
 				}
 			}
@@ -569,19 +497,22 @@ func (s *Schema) UniqueDirectiveDefinition(wg *sync.WaitGroup) {
 	s.DirectiveDefinitions = s.DirectiveDefinitions[:j]
 }
 
-func (s *Schema) UniqueMutation(wg *sync.WaitGroup) {
+func (s *Schema) MergeTypeName(wg *sync.WaitGroup) {
 	defer wg.Done()
 	j := 0
-	seen := make(map[string]struct{}, len(s.Mutations))
-	for _, v := range s.Mutations {
+	seen := make(map[string]struct{}, len(s.Types))
+	for _, v := range s.Types {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
-				if s.Mutations[i].Name == v.Name {
-					if reflect.DeepEqual(s.Mutations[i].Args, v.Args) && reflect.DeepEqual(s.Mutations[i].Resp, v.Resp) && reflect.DeepEqual(s.Mutations[i].Directives, v.Directives) {
+				if s.Types[i].Name == v.Name {
+					// FIXME merge props
+					if reflect.DeepEqual(s.Types[i].ImplTypes, v.ImplTypes) && reflect.DeepEqual(s.Types[i].Directives, v.Directives) {
+						mergedProps := mergeProps(s.Types[i].Fields, v.Fields)
+						s.Types[i].Fields = mergedProps
 						break
 					} else {
 
-						rel1, err := GetRelPath(s.Mutations[i].Filename)
+						rel1, err := GetRelPath(s.Types[i].Filename)
 						if err != nil {
 							panic(err)
 						}
@@ -590,119 +521,17 @@ func (s *Schema) UniqueMutation(wg *sync.WaitGroup) {
 							panic(err)
 						}
 
-						panic(fmt.Sprintf("Duplicated Mutations: %s(%s, %v:%v) and (%s, %v:%v)", s.Mutations[i].Name, *rel1, s.Mutations[i].Line, s.Mutations[i].Column, *rel2, v.Line, v.Column))
+						errorf("Duplicated Types: %s(%s:%v:%v) and (%s:%v:%v)", s.Types[i].Name, *rel1, s.Types[i].Line, s.Types[i].Column, *rel2, v.Line, v.Column)
 					}
 				}
 			}
 			continue
 		}
 		seen[v.Name] = struct{}{}
-		s.Mutations[j] = v
+		s.Types[j] = v
 		j++
 	}
-	s.Mutations = s.Mutations[:j]
-}
-
-func (s *Schema) UniqueQuery(wg *sync.WaitGroup) {
-	defer wg.Done()
-	j := 0
-	seen := make(map[string]struct{}, len(s.Queries))
-	for _, v := range s.Queries {
-		if _, ok := seen[v.Name]; ok {
-			for i := 0; i < j; i++ {
-				if s.Queries[i].Name == v.Name {
-					if reflect.DeepEqual(s.Queries[i].Args, v.Args) && reflect.DeepEqual(s.Queries[i].Resp, v.Resp) && reflect.DeepEqual(s.Queries[i].Directives, v.Directives) {
-						break
-					} else {
-
-						rel1, err := GetRelPath(s.Queries[i].Filename)
-						if err != nil {
-							panic(err)
-						}
-						rel2, err := GetRelPath(v.Filename)
-						if err != nil {
-							panic(err)
-						}
-
-						panic(fmt.Sprintf("Duplicated Queries: %s(%s, %v:%v) and (%s, %v:%v)", s.Queries[i].Name, *rel1, s.Queries[i].Line, s.Queries[i].Column, *rel2, v.Line, v.Column))
-					}
-				}
-			}
-			continue
-		}
-		seen[v.Name] = struct{}{}
-		s.Queries[j] = v
-		j++
-	}
-	s.Queries = s.Queries[:j]
-}
-
-func (s *Schema) UniqueSubscription(wg *sync.WaitGroup) {
-	defer wg.Done()
-	j := 0
-	seen := make(map[string]struct{}, len(s.Subscriptions))
-	for _, v := range s.Subscriptions {
-		if _, ok := seen[v.Name]; ok {
-			for i := 0; i < j; i++ {
-				if s.Subscriptions[i].Name == v.Name {
-					if reflect.DeepEqual(s.Subscriptions[i].Args, v.Args) && reflect.DeepEqual(s.Subscriptions[i].Resp, v.Resp) && reflect.DeepEqual(s.Subscriptions[i].Directives, v.Directives) {
-						break
-					} else {
-
-						rel1, err := GetRelPath(s.Subscriptions[i].Filename)
-						if err != nil {
-							panic(err)
-						}
-						rel2, err := GetRelPath(v.Filename)
-						if err != nil {
-							panic(err)
-						}
-
-						panic(fmt.Sprintf("Duplicated Subscriptions: %s(%s, %v:%v) and (%s, %v:%v)", s.Subscriptions[i].Name, *rel1, s.Subscriptions[i].Line, s.Subscriptions[i].Column, *rel2, v.Line, v.Column))
-					}
-				}
-			}
-			continue
-		}
-		seen[v.Name] = struct{}{}
-		s.Subscriptions[j] = v
-		j++
-	}
-	s.Subscriptions = s.Subscriptions[:j]
-}
-
-func (s *Schema) UniqueTypeName(wg *sync.WaitGroup) {
-	defer wg.Done()
-	j := 0
-	seen := make(map[string]struct{}, len(s.TypeNames))
-	for _, v := range s.TypeNames {
-		if _, ok := seen[v.Name]; ok {
-			for i := 0; i < j; i++ {
-				if s.TypeNames[i].Name == v.Name {
-					if reflect.DeepEqual(s.TypeNames[i].ImplTypes, v.ImplTypes) && reflect.DeepEqual(s.TypeNames[i].Props, v.Props) && reflect.DeepEqual(s.TypeNames[i].Directives, v.Directives) {
-						break
-					} else {
-
-						rel1, err := GetRelPath(s.TypeNames[i].Filename)
-						if err != nil {
-							panic(err)
-						}
-						rel2, err := GetRelPath(v.Filename)
-						if err != nil {
-							panic(err)
-						}
-
-						panic(fmt.Sprintf("Duplicated Types: %s(%s:%v:%v) and (%s:%v:%v)", s.TypeNames[i].Name, *rel1, s.TypeNames[i].Line, s.TypeNames[i].Column, *rel2, v.Line, v.Column))
-					}
-				}
-			}
-			continue
-		}
-		seen[v.Name] = struct{}{}
-		s.TypeNames[j] = v
-		j++
-	}
-	s.TypeNames = s.TypeNames[:j]
+	s.Types = s.Types[:j]
 }
 
 func (s *Schema) UniqueScalar(wg *sync.WaitGroup) {
@@ -725,7 +554,7 @@ func (s *Schema) UniqueScalar(wg *sync.WaitGroup) {
 							panic(err)
 						}
 
-						panic(fmt.Sprintf("Duplicated Scalars: %s(%s, %v:%v) and (%s, %v:%v)", s.Scalars[i].Name, *rel1, s.Scalars[i].Line, s.Scalars[i].Column, *rel2, v.Line, v.Column))
+						errorf("Duplicated Scalars: %s(%s:%v:%v) and (%s:%v:%v)", s.Scalars[i].Name, *rel1, s.Scalars[i].Line, s.Scalars[i].Column, *rel2, v.Line, v.Column)
 					}
 				}
 			}
@@ -759,7 +588,7 @@ func (s *Schema) UniqueEnum(wg *sync.WaitGroup) {
 							panic(err)
 						}
 
-						panic(fmt.Sprintf("Duplicated Enums: %s(%s, %v:%v) and (%s, %v:%v)", s.Enums[i].Name, *rel1, s.Enums[i].Line, s.Enums[i].Column, *rel2, v.Line, v.Column))
+						errorf("Duplicated Enums: %s(%s:%v:%v) and (%s:%v:%v)", s.Enums[i].Name, *rel1, s.Enums[i].Line, s.Enums[i].Column, *rel2, v.Line, v.Column)
 					}
 				}
 			}
@@ -780,7 +609,7 @@ func (s *Schema) UniqueInterface(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Interfaces[i].Name == v.Name {
-					if reflect.DeepEqual(s.Interfaces[i].Directives, v.Directives) && reflect.DeepEqual(s.Interfaces[i].Props, v.Props) {
+					if reflect.DeepEqual(s.Interfaces[i].Directives, v.Directives) && reflect.DeepEqual(s.Interfaces[i].Fields, v.Fields) {
 						break
 					} else {
 
@@ -793,7 +622,7 @@ func (s *Schema) UniqueInterface(wg *sync.WaitGroup) {
 							panic(err)
 						}
 
-						panic(fmt.Sprintf("Duplicated Interfaces: %s(%s, %v:%v) and (%s, %v:%v)", s.Interfaces[i].Name, *rel1, s.Interfaces[i].Line, s.Interfaces[i].Column, *rel2, v.Line, v.Column))
+						errorf("Duplicated Interfaces: %s(%s:%v:%v) and (%s:%v:%v)", s.Interfaces[i].Name, *rel1, s.Interfaces[i].Line, s.Interfaces[i].Column, *rel2, v.Line, v.Column)
 					}
 				}
 			}
@@ -814,7 +643,7 @@ func (s *Schema) UniqueUnion(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Unions[i].Name == v.Name {
-					if reflect.DeepEqual(s.Unions[i].Directives, v.Directives) && reflect.DeepEqual(s.Unions[i].Fields, v.Fields) {
+					if reflect.DeepEqual(s.Unions[i].Directives, v.Directives) && reflect.DeepEqual(s.Unions[i].Types, v.Types) {
 						break
 					} else {
 
@@ -827,7 +656,7 @@ func (s *Schema) UniqueUnion(wg *sync.WaitGroup) {
 							panic(err)
 						}
 
-						panic(fmt.Sprintf("Duplicated Unions: %s(%s, %v:%v) and (%s, %v:%v)", s.Unions[i].Name, *rel1, s.Unions[i].Line, s.Unions[i].Column, *rel2, v.Line, v.Column))
+						errorf("Duplicated Unions: %s(%s:%v:%v) and (%s:%v:%v)", s.Unions[i].Name, *rel1, s.Unions[i].Line, s.Unions[i].Column, *rel2, v.Line, v.Column)
 					}
 				}
 			}
@@ -848,7 +677,7 @@ func (s *Schema) UniqueInput(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Inputs[i].Name == v.Name {
-					if reflect.DeepEqual(s.Inputs[i].Props, v.Props) {
+					if reflect.DeepEqual(s.Inputs[i].Fields, v.Fields) {
 						break
 					} else {
 
@@ -861,7 +690,7 @@ func (s *Schema) UniqueInput(wg *sync.WaitGroup) {
 							panic(err)
 						}
 
-						panic(fmt.Sprintf("Duplicated Inputs: %s(%s, %v:%v) and (%s, %v:%v)", s.Inputs[i].Name, *rel1, s.Inputs[i].Line, s.Inputs[i].Column, *rel2, v.Line, v.Column))
+						errorf("Duplicated Inputs: %s(%s:%v:%v) and (%s:%v:%v)", s.Inputs[i].Name, *rel1, s.Inputs[i].Line, s.Inputs[i].Column, *rel2, v.Line, v.Column)
 					}
 				}
 			}
@@ -872,4 +701,38 @@ func (s *Schema) UniqueInput(wg *sync.WaitGroup) {
 		j++
 	}
 	s.Inputs = s.Inputs[:j]
+}
+
+func mergeProps(a []*Field, b []*Field) []*Field {
+	ps := make([]*Field, len(a)+len(b))
+	j := 0
+	seen := make(map[string]struct{}, len(a)+len(b))
+	combined := append(a, b...)
+	for _, v := range combined {
+		if _, ok := seen[v.Name]; ok {
+			for i := 0; i < j; i++ {
+				if combined[i].Name == v.Name {
+					if reflect.DeepEqual(combined[i].Args, v.Args) && combined[i].Type == v.Type && combined[i].Null == v.Null && combined[i].IsList == v.IsList && combined[i].IsListNull == v.IsListNull && reflect.DeepEqual(combined[i].Directives, v.Directives) {
+						break
+					} else {
+						rel1, err := GetRelPath(combined[i].Filename)
+						if err != nil {
+							panic(err)
+						}
+						rel2, err := GetRelPath(v.Filename)
+						if err != nil {
+							panic(err)
+						}
+
+						errorf("Duplicated Types: %s(%s:%v:%v) and (%s:%v:%v)", combined[i].Name, *rel1, combined[i].Line, combined[i].Column, *rel2, v.Line, v.Column)
+					}
+				}
+			}
+			continue
+		}
+		seen[v.Name] = struct{}{}
+		ps[j] = v
+		j++
+	}
+	return ps[:j]
 }

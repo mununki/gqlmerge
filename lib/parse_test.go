@@ -7,8 +7,13 @@ import (
 
 func TestParsing(t *testing.T) {
 	var src = `
+	schema {
+		query: Query
+		mutation: Mutation
+	}
+
 	type Query {
-		checkIfExists(userId: ID!, name: String): CheckIfExistsResponse!
+		checkIfExists(userId: ID!, name: String): CheckIfExistsResponse! # TEST
 	}
 
 	directive @goModel(
@@ -21,12 +26,12 @@ func TestParsing(t *testing.T) {
 	interface Node @goModel(
 		" description "
 		model: "todo/ent.Noder", models: ["a", "b"]) {
-		id: ID!
+		id: ID! # TEST
 	}
 	
 	enum Color @goModel(model: "backend/ent/color.Color") {
-		Blue @ignore(if: isError)
-		Red
+		Blue @ignore(if: isError) # TEST
+		Red # TEST
 	}
 
 	type User implements Node & Profile {
@@ -40,6 +45,10 @@ func TestParsing(t *testing.T) {
 		error: String
 		user: [User]!
 	}
+
+	scalar DateTime # TEST
+
+	union Response = Success | Failure
 `
 
 	s := Schema{}
