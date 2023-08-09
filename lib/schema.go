@@ -9,7 +9,7 @@ import (
 )
 
 // GetSchema is to parse ./schema/**/*.graphql
-func (sc *Schema) GetSchema(path string) {
+func (sc *Schema) ReadSchema(path string) {
 	// FIX: is there any way to use a relative path?
 	// currently, it works only with absolute path
 	// in case of using a relative path such as '../schema', it spits out an error

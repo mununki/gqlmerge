@@ -9,7 +9,7 @@ type MergedSchema struct {
 	Indent string
 }
 
-func (ms *MergedSchema) StitchSchema(s *Schema) string {
+func (ms *MergedSchema) WriteSchema(s *Schema) string {
 	ms.writeDescriptions(s.SchemaDefinitions[0].Descriptions, 0, true)
 	ms.buf.WriteString("schema {\n")
 	ms.addIndent(1)

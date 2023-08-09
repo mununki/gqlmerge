@@ -16,7 +16,7 @@ func Merge(indent string, paths ...string) *string {
 	schemas := make([]Schema, 0, len(paths))
 
 	for _, path := range paths {
-		if sc := getSchema(path); sc != nil {
+		if sc := parseSchema(path); sc != nil {
 			schemas = append(schemas, *sc)
 		}
 	}
@@ -25,13 +25,13 @@ func Merge(indent string, paths ...string) *string {
 		return nil
 	}
 
-	schema := joinSchemas(schemas)
+	schema := mergeSchemas(schemas)
 	ms := MergedSchema{Indent: indent}
-	ss := ms.StitchSchema(schema)
+	ss := ms.WriteSchema(schema)
 	return &ss
 }
 
-func getSchema(path string) *Schema {
+func parseSchema(path string) *Schema {
 	abs, err := filepath.Abs(path)
 	if err != nil {
 		fmt.Println(err)
@@ -40,7 +40,7 @@ func getSchema(path string) *Schema {
 
 	sc := &Schema{}
 	// at this moment, path should be an absolute path
-	sc.GetSchema(abs)
+	sc.ReadSchema(abs)
 
 	if len(sc.Files) == 0 {
 		return nil
@@ -54,7 +54,7 @@ func getSchema(path string) *Schema {
 	return sc
 }
 
-func joinSchemas(schemas []Schema) *Schema {
+func mergeSchemas(schemas []Schema) *Schema {
 	schema := Schema{}
 
 	for _, s := range schemas {
