@@ -59,7 +59,7 @@ func joinSchemas(schemas []Schema) *Schema {
 
 	for _, s := range schemas {
 		schema.Files = append(schema.Files, s.Files...)
-		schema.SchemaDefinitions = append(s.SchemaDefinitions, s.SchemaDefinitions...)
+		schema.SchemaDefinitions = append(schema.SchemaDefinitions, s.SchemaDefinitions...)
 		schema.DirectiveDefinitions = append(schema.DirectiveDefinitions, s.DirectiveDefinitions...)
 		schema.Types = append(schema.Types, s.Types...)
 		schema.Scalars = append(schema.Scalars, s.Scalars...)

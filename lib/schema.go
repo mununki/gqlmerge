@@ -143,8 +143,12 @@ func (s *Schema) Parse(p *Parser) {
 			c.Name = name.String()
 			c.Directives = p.parseDirectives()
 			sc := p.parseSingleLineComment()
-			if sc != nil {
-				c.Comments = append(c.Comments, *sc)
+			if c.Comments != nil && sc != nil {
+				cs := append(*c.Comments, *sc)
+				c.Comments = &cs
+			} else if c.Comments == nil && sc != nil {
+				cs := []string{*sc}
+				c.Comments = &cs
 			}
 			s.Scalars = append(s.Scalars, &c)
 
@@ -165,8 +169,12 @@ func (s *Schema) Parse(p *Parser) {
 				ev.Descriptions = comments
 				ev.Directives = p.parseDirectives()
 				sc := p.parseSingleLineComment()
-				if sc != nil {
-					ev.Comments = append(ev.Comments, *sc)
+				if ev.Comments != nil && sc != nil {
+					cs := append(*ev.Comments, *sc)
+					ev.Comments = &cs
+				} else if ev.Comments == nil && sc != nil {
+					cs := []string{*sc}
+					ev.Comments = &cs
 				}
 				e.EnumValues = append(e.EnumValues, ev)
 			}
@@ -231,8 +239,12 @@ func (s *Schema) Parse(p *Parser) {
 				fd.Directives = p.parseDirectives()
 
 				sc := p.parseSingleLineComment()
-				if sc != nil {
-					fd.Comments = append(fd.Comments, *sc)
+				if fd.Comments != nil && sc != nil {
+					cs := append(*fd.Comments, *sc)
+					fd.Comments = &cs
+				} else if fd.Comments == nil && sc != nil {
+					cs := []string{*sc}
+					fd.Comments = &cs
 				}
 
 				i.Fields = append(i.Fields, &fd)
@@ -246,6 +258,7 @@ func (s *Schema) Parse(p *Parser) {
 			u.Filename = p.lex.filename
 			u.Line = p.lex.line
 			u.Column = p.lex.col
+			u.Descriptions = p.bufString()
 			name, _ := p.lex.consumeIdent()
 			u.Name = name.String()
 			u.Directives = p.parseDirectives()
@@ -317,8 +330,12 @@ func (s *Schema) Parse(p *Parser) {
 				fd.Directives = p.parseDirectives()
 
 				sc := p.parseSingleLineComment()
-				if sc != nil {
-					fd.Comments = append(fd.Comments, *sc)
+				if fd.Comments != nil && sc != nil {
+					cs := append(*fd.Comments, *sc)
+					fd.Comments = &cs
+				} else if fd.Comments == nil && sc != nil {
+					cs := []string{*sc}
+					fd.Comments = &cs
 				}
 
 				i.Fields = append(i.Fields, &fd)
@@ -397,8 +414,12 @@ func (s *Schema) Parse(p *Parser) {
 					fd.Directives = p.parseDirectives()
 
 					sc := p.parseSingleLineComment()
-					if sc != nil {
-						fd.Comments = append(fd.Comments, *sc)
+					if fd.Comments != nil && sc != nil {
+						cs := append(*fd.Comments, *sc)
+						fd.Comments = &cs
+					} else if fd.Comments == nil && sc != nil {
+						cs := []string{*sc}
+						fd.Comments = &cs
 					}
 
 					t.Fields = append(t.Fields, &fd)
@@ -461,7 +482,11 @@ func (s *Schema) mergeSchemaDefinition(wg *sync.WaitGroup) {
 			}
 			errorf("Duplicated Directive Definitions: %s(%s:%v:%v) and (%s:%v:%v)", *sd.Subscription, *rel1, sd.Line, sd.Column, *rel2, v.Line, v.Column)
 		}
+
+		sd.Descriptions = mergeStrings(sd.Descriptions, v.Descriptions)
 	}
+	sds := []*SchemaDefinition{&sd}
+	s.SchemaDefinitions = sds
 }
 
 func (s *Schema) UniqueDirectiveDefinition(wg *sync.WaitGroup) {
@@ -472,7 +497,8 @@ func (s *Schema) UniqueDirectiveDefinition(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.DirectiveDefinitions[i].Name == v.Name {
-					if reflect.DeepEqual(s.DirectiveDefinitions[i].Args, v.Args) && reflect.DeepEqual(s.DirectiveDefinitions[i].Repeatable, v.Repeatable) && reflect.DeepEqual(s.DirectiveDefinitions[i].Locations, v.Locations) {
+					if IsEqualWithoutDescriptions(s.DirectiveDefinitions[i], v) {
+						mergeDescriptionsAndComments(s.DirectiveDefinitions[i], v)
 						break
 					} else {
 						rel1, err := GetRelPath(s.DirectiveDefinitions[i].Filename)
@@ -505,10 +531,9 @@ func (s *Schema) MergeTypeName(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Types[i].Name == v.Name {
-					// FIXME merge props
-					if reflect.DeepEqual(s.Types[i].ImplTypes, v.ImplTypes) && reflect.DeepEqual(s.Types[i].Directives, v.Directives) {
-						mergedProps := mergeProps(s.Types[i].Fields, v.Fields)
-						s.Types[i].Fields = mergedProps
+					if reflect.DeepEqual(s.Types[i].ImplTypes, v.ImplTypes) && IsEqualWithoutDescriptions(s.Types[i].Directives, v.Directives) {
+						s.Types[i].Fields = mergeFields(s.Types[i].Fields, v.Fields)
+						mergeDescriptionsAndComments(s.Types[i].Directives, v.Directives)
 						break
 					} else {
 
@@ -542,7 +567,8 @@ func (s *Schema) UniqueScalar(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Scalars[i].Name == v.Name {
-					if reflect.DeepEqual(s.Scalars[i].Directives, v.Directives) {
+					if IsEqualWithoutDescriptions(s.Scalars[i].Directives, v.Directives) {
+						mergeDescriptionsAndComments(s.Scalars[i], v)
 						break
 					} else {
 						rel1, err := GetRelPath(s.Scalars[i].Filename)
@@ -575,7 +601,8 @@ func (s *Schema) UniqueEnum(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Enums[i].Name == v.Name {
-					if reflect.DeepEqual(s.Enums[i].Directives, v.Directives) && reflect.DeepEqual(s.Enums[i].EnumValues, v.EnumValues) {
+					if IsEqualWithoutDescriptions(s.Enums[i].Directives, v.Directives) && IsEqualWithoutDescriptions(s.Enums[i].EnumValues, v.EnumValues) {
+						mergeDescriptionsAndComments(s.Enums[i], v)
 						break
 					} else {
 
@@ -609,7 +636,8 @@ func (s *Schema) UniqueInterface(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Interfaces[i].Name == v.Name {
-					if reflect.DeepEqual(s.Interfaces[i].Directives, v.Directives) && reflect.DeepEqual(s.Interfaces[i].Fields, v.Fields) {
+					if IsEqualWithoutDescriptions(s.Interfaces[i].Directives, v.Directives) && IsEqualWithoutDescriptions(s.Interfaces[i].Fields, v.Fields) {
+						mergeDescriptionsAndComments(s.Interfaces[i], v)
 						break
 					} else {
 
@@ -643,7 +671,8 @@ func (s *Schema) UniqueUnion(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Unions[i].Name == v.Name {
-					if reflect.DeepEqual(s.Unions[i].Directives, v.Directives) && reflect.DeepEqual(s.Unions[i].Types, v.Types) {
+					if IsEqualWithoutDescriptions(s.Unions[i].Directives, v.Directives) && IsEqualWithoutDescriptions(s.Unions[i].Types, v.Types) {
+						mergeDescriptionsAndComments(s.Unions[i], v)
 						break
 					} else {
 
@@ -677,7 +706,8 @@ func (s *Schema) UniqueInput(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Inputs[i].Name == v.Name {
-					if reflect.DeepEqual(s.Inputs[i].Fields, v.Fields) {
+					if IsEqualWithoutDescriptions(s.Inputs[i].Fields, v.Fields) {
+						mergeDescriptionsAndComments(s.Inputs[i], v)
 						break
 					} else {
 
@@ -703,7 +733,7 @@ func (s *Schema) UniqueInput(wg *sync.WaitGroup) {
 	s.Inputs = s.Inputs[:j]
 }
 
-func mergeProps(a []*Field, b []*Field) []*Field {
+func mergeFields(a []*Field, b []*Field) []*Field {
 	ps := make([]*Field, len(a)+len(b))
 	j := 0
 	seen := make(map[string]struct{}, len(a)+len(b))
@@ -712,7 +742,8 @@ func mergeProps(a []*Field, b []*Field) []*Field {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if combined[i].Name == v.Name {
-					if reflect.DeepEqual(combined[i].Args, v.Args) && combined[i].Type == v.Type && combined[i].Null == v.Null && combined[i].IsList == v.IsList && combined[i].IsListNull == v.IsListNull && reflect.DeepEqual(combined[i].Directives, v.Directives) {
+					if IsEqualWithoutDescriptions(combined[i].Args, v.Args) && combined[i].Type == v.Type && combined[i].Null == v.Null && combined[i].IsList == v.IsList && combined[i].IsListNull == v.IsListNull && IsEqualWithoutDescriptions(combined[i].Directives, v.Directives) {
+						mergeDescriptionsAndComments(combined[i], v)
 						break
 					} else {
 						rel1, err := GetRelPath(combined[i].Filename)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/mununki/gqlmerge/command"
@@ -22,7 +21,7 @@ func main() {
 
 	if ss != nil {
 		bs := []byte(*ss)
-		err := ioutil.WriteFile(cmd.Output, bs, 0644)
+		err := os.WriteFile(cmd.Output, bs, 0644)
 		if err != nil {
 			fmt.Printf("😱 Error in writing '%s' file", cmd.Output)
 			return

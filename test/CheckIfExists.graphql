@@ -4,7 +4,7 @@ schema {
 }
 
 type Query {
-  checkIfExists(userId: ID!, name: String): CheckIfExistsResponse!
+  checkIfExists(" user_id " userId: ID!, name: String): CheckIfExistsResponse!
   getMyProfile: UserResponse!
 }
 
@@ -14,13 +14,34 @@ type CheckIfExistsResponse {
   user: [User]!
 }
 
+"""
+TEST type User 2
+"""
 type User implements Node & Owner {
-  id: ID!
+  " user_id "
+  id: ID! # TEST 2
   email: String!
   fullName: String!
   avatar: Url
 }
 
-scalar Price
-
+scalar Price # TEST
+"""
+UNION
+"""
 union Response = Success | Failure
+
+"""
+TEST
+"""
+interface Node @goModel(model: "todo/ent.Noder", models: ["a", "b"]) {
+  id: ID! # TEST
+}
+
+"""
+INPUT
+"""
+input CreateChatInput {
+  " post_id "
+  postId: ID!
+}

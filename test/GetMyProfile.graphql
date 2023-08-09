@@ -1,15 +1,20 @@
+" Description: schema 3"
 schema {
   query: Query
-  mutation: Mutation
-  subscription: Subscription
 }
 
+"""
+TEST Directive
+"""
 directive @goModel(
+  " model?? "
   model: String
   models: [String!]
 ) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 
 type Query {
+  " checkIfExists 3 "
+  checkIfExists(userId: ID!, name: String): CheckIfExistsResponse!
   getMyProfile: UserResponse!
 }
 
@@ -19,10 +24,34 @@ type UserResponse {
   user: User
 }
 
+"""
+TEST type User 1
+"""
 type User implements Node & Owner {
-  id: ID!
+  " user_id "
+  id: ID! # TEST 1
   email: String!
   fullName: String!
 }
 
-scalar Price
+"""
+TEST Price
+"""
+scalar Price # TEST 2
+"""
+INPUT 2
+"""
+input CreateChatInput {
+  " post_id 2 "
+  postId: ID!
+}
+
+"""
+ENUM 2
+"""
+enum Color @goModel(model: "backend/ent/color.Color") {
+  " Blue 2"
+  Blue @ignore(if: isError) # TEST 2
+  " Red 2 "
+  Red # TEST 2
+}

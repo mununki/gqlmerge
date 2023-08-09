@@ -1,15 +1,35 @@
+"""
+TEST : Directive 1
+"""
 directive @goModel(
-  model: String, models: [String!]
+  " model "
+  model: String
+  " models "
+  models: [String!]
 ) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 
 """
-TEST
+TEST 1
 """
 interface Node @goModel(model: "todo/ent.Noder", models: ["a", "b"]) {
-  id: ID! # TEST
+  " id 1 "
+  id: ID! # TEST 1
 }
 
+"""
+ENUM
+"""
 enum Color @goModel(model: "backend/ent/color.Color") {
-  Blue @ignore(if: isError)
-  Red
+  " Blue "
+  Blue @ignore(if: isError) # TEST
+  " Red"
+  Red # TEST
+}
+
+"""
+INPUT 1
+"""
+input CreateChatInput {
+  " post_id 1 "
+  postId: ID!
 }
