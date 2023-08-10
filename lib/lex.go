@@ -23,9 +23,8 @@ const (
 	tokRBracket                    // ]
 	tokBar                         // |
 	tokQuote                       // '
-	tokDoubleQuote                 // " description
 	tokSingleLineComment           // # comment
-	tokMultiLineComment            // """ multi line comment
+	tokBlockString                 // """ multi line comment
 	tokColon                       // :
 	tokComma                       // ,
 	tokDot                         // .
@@ -79,11 +78,9 @@ func (typ tokenType) String() string {
 		return "|"
 	case tokQuote:
 		return "'"
-	case tokDoubleQuote:
-		return "\""
 	case tokSingleLineComment:
 		return "comment"
-	case tokMultiLineComment:
+	case tokBlockString:
 		return "multi line comment"
 	case tokColon:
 		return ":"
@@ -415,7 +412,7 @@ func (l *lexer) stringOrBlockString(r rune) *token {
 					if r == '"' && l.peek() == '"' {
 						r = l.read()
 						l.buf.WriteRune(r)
-						return mkToken(tokMultiLineComment, l.buf.String())
+						return mkToken(tokBlockString, l.buf.String())
 					}
 					errorf("%s:%d:%d: Block string literal terminated", l.filename, l.line, l.col)
 				}
@@ -467,7 +464,7 @@ func (l *lexer) consumeIdent() (*token, *[]string) {
 	comments := []string{}
 	for {
 		tok := l.next()
-		if tok.typ == tokString || tok.typ == tokSingleLineComment || tok.typ == tokMultiLineComment {
+		if tok.typ == tokString || tok.typ == tokSingleLineComment || tok.typ == tokBlockString {
 			comments = append(comments, tok.String())
 			continue
 		}

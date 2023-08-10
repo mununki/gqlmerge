@@ -101,7 +101,7 @@ func (s *Schema) Parse(p *Parser) {
 		case tokSingleLineComment:
 			p.buf = append(p.buf, tok)
 
-		case tokMultiLineComment:
+		case tokBlockString:
 			p.buf = append(p.buf, tok)
 
 		case tokDirective:
