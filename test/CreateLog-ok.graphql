@@ -1,0 +1,11 @@
+schema {
+  mutation: Mutation
+}
+
+input CreateLogInput {
+  text: String!
+}
+
+type Mutation {
+  createLogOk(inputLog: CreateLogInput!): String!
+}
