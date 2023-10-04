@@ -460,7 +460,7 @@ func (l *lexer) consumeToken(expected tokenType) {
 	l.skipSpace()
 }
 
-func (l *lexer) consumeIdent() (*token, *[]string) {
+func (l *lexer) consumeIdent(includings ...tokenType) (*token, *[]string) {
 	comments := []string{}
 	for {
 		tok := l.next()
@@ -468,7 +468,16 @@ func (l *lexer) consumeIdent() (*token, *[]string) {
 			comments = append(comments, tok.String())
 			continue
 		}
-		if tok.typ != tokIdent {
+
+		isIncluded := false
+		for _, incl := range includings {
+			if tok.typ == incl {
+				isIncluded = true
+				break
+			}
+		}
+
+		if tok.typ != tokIdent && !isIncluded {
 			errorf(`%s:%d:%d: unexpected "%s"`, l.filename, l.line, l.col, tok.String())
 		}
 		l.skipSpace()

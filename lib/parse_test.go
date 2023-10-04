@@ -49,6 +49,14 @@ func TestParsing(t *testing.T) {
 	scalar DateTime # TEST
 
 	union Response = Success | Failure
+
+	input CreateLogInput {
+		text: String!
+	}
+	
+	type Mutation {
+		createLogKo(input: CreateLogInput!): String!
+	}
 `
 
 	s := Schema{}
