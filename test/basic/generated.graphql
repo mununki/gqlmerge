@@ -32,11 +32,6 @@ type User implements Node & Owner {
     avatar: Url
 }
 
-type Mutation {
-    createLogKo(inputx: CreateLogInput!): String!
-    createLogOk(inputLog: CreateLogInput!): String!
-}
-
 type UserResponse {
     ok: Boolean!
     error: String
@@ -75,8 +70,4 @@ INPUT
 input CreateChatInput {
     " post_id "
     postId: ID!
-}
-
-input CreateLogInput {
-    text: String!
 }

@@ -8,4 +8,4 @@ gqlmerge
 .idea
 
 demo/demo.yml
-!test/*.graphql
+!test/**/*.graphql
