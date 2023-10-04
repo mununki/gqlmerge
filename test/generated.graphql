@@ -1,0 +1,82 @@
+" Description: schema 3"
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+}
+
+"""
+TEST : Directive 1
+"""
+directive @goModel(" model " model: String, " models " models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+
+type Query {
+    " checkIfExists 3 "     checkIfExists(" user_id " userId: ID!, name: String): CheckIfExistsResponse!
+    getMyProfile: UserResponse!
+}
+
+type CheckIfExistsResponse {
+    ok: Boolean!
+    error: String
+    user: [User]!
+}
+
+"""
+TEST type User 2
+"""
+type User implements Node & Owner {
+    " user_id "     id: ID! # TEST 2
+    email: String!
+    fullName: String!
+    avatar: Url
+}
+
+type Mutation {
+    createLogKo(inputx: CreateLogInput!): String!
+    createLogOk(inputLog: CreateLogInput!): String!
+}
+
+type UserResponse {
+    ok: Boolean!
+    error: String
+    user: User
+}
+
+"""
+TEST Price
+"""
+scalar Price # TEST
+
+"""
+ENUM
+"""
+enum Color @goModel(model: "backend/ent/color.Color") {
+    Blue @ignore(if: isError) # TEST
+    Red # TEST
+}
+
+"""
+TEST
+"""
+interface Node @goModel(model: "todo/ent.Noder", models: ["a","b"]) {
+    " id 1 "
+    id: ID!
+}
+
+"""
+UNION
+"""
+union Response = Success | Failure
+
+"""
+INPUT
+"""
+input CreateChatInput {
+    " post_id "
+    postId: ID!
+}
+
+input CreateLogInput {
+    text: String!
+}
