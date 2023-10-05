@@ -40,7 +40,7 @@ func (p *Parser) parseArgs() []*Arg {
 		p.lex.consumeToken(tokLParen)
 		for p.lex.peek() != ')' {
 			arg := Arg{}
-			name, comments := p.lex.consumeIdent(tokInput, tokType)
+			name, comments := p.lex.consumeIdent(tokType)
 			arg.Name = name.String()
 			arg.Descriptions = comments
 			p.lex.consumeToken(tokColon)
