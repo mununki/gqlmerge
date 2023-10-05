@@ -11,7 +11,7 @@ type MergedSchema struct {
 
 func (ms *MergedSchema) WriteSchema(s *Schema) string {
 	ms.writeDescriptions(s.SchemaDefinitions[0].Descriptions, 0, true)
-	ms.buf.WriteString("schema {\n")
+	ms.buf.WriteString("schema! {\n")
 	ms.addIndent(1)
 	if s.SchemaDefinitions[0].Query != nil {
 		ms.buf.WriteString("query: " + *s.SchemaDefinitions[0].Query + "\n")
