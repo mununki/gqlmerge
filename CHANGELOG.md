@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.11
+
+- Fixed mis-used rune `[` instead of tokLBracket https://github.com/mununki/gqlmerge/pull/41
+
 ## v0.2.10
 
 - Fixed build error when the argument name has `input` https://github.com/mununki/gqlmerge/pull/39
