@@ -207,7 +207,7 @@ func (s *Schema) Parse(p *Parser) {
 
 				if p.lex.peek() == '[' {
 					fd.IsList = true
-					p.lex.consumeToken('[')
+					p.lex.consumeToken(tokLBracket)
 					name, _ = p.lex.consumeIdent()
 					fd.Type = name.String()
 					if p.lex.peek() == '!' {
