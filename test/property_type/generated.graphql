@@ -1,0 +1,14 @@
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+}
+
+type SomePayload {
+    type: String!
+    someKey: String!
+}
+
+
+
+

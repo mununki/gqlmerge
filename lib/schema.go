@@ -372,7 +372,7 @@ func (s *Schema) Parse(p *Parser) {
 					fd.Filename = p.lex.filename
 					fd.Line = p.lex.line
 					fd.Column = p.lex.col
-					name, comments := p.lex.consumeIdent()
+					name, comments := p.lex.consumeIdent(tokInput, tokType)
 					fd.Name = name.String()
 					fd.Descriptions = comments
 
