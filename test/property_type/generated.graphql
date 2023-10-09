@@ -11,4 +11,12 @@ type SomePayload {
 
 
 
+interface I {
+    type: String!
+    input: String!
+}
 
+input I {
+    type: String!
+    input: String!
+}
