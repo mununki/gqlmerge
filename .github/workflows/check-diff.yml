@@ -25,9 +25,9 @@ jobs:
       run: |
         make build
 
-    - name: Run make merge
+    - name: Run make test
       run: |
-        make merge
+        make test
 
     - name: Run make check-diff
       run: |
