@@ -7,7 +7,7 @@ all: build test check-diff
 build:
 	go build
 
-test: build
+test:
 	@for dir in $(shell find test -type d -name schema); do \
 		basedir=`dirname $$dir`; \
 		output="$$basedir/generated.graphql"; \
@@ -15,7 +15,7 @@ test: build
 		./gqlmerge $$dir $$output; \
 	done
 
-check-diff: build test
+check-diff:
 	@if git diff --exit-code --quiet -- '*.graphql'; then \
 		echo "Ok"; \
 	else \
