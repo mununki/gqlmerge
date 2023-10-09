@@ -1,0 +1,4 @@
+input I {
+  type: String!
+  input: String!
+}

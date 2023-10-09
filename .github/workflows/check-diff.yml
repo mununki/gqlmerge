@@ -20,6 +20,14 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version}}
+    
+    - name: Run make build
+      run: |
+        make build
+
+    - name: Run make test
+      run: |
+        make test
 
     - name: Run make check-diff
       run: |

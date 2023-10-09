@@ -1,0 +1,22 @@
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+}
+
+type SomePayload {
+    type: String!
+    someKey: String!
+}
+
+
+
+interface I {
+    type: String!
+    input: String!
+}
+
+input I {
+    type: String!
+    input: String!
+}

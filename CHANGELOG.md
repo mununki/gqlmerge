@@ -3,6 +3,7 @@
 ## v0.2.11
 
 - Fixed mis-used rune `[` instead of tokLBracket https://github.com/mununki/gqlmerge/pull/41
+- Fixed merge error when the property name as `type` https://github.com/mununki/gqlmerge/pull/45
 
 ## v0.2.10
 
