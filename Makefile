@@ -12,7 +12,7 @@ test:
 		basedir=`dirname $$dir`; \
 		output="$$basedir/generated.graphql"; \
 		echo "Merging $$dir into $$output..."; \
-		./gqlmerge $$dir $$output; \
+		./gqlmerge $$dir $$output || exit 1; \
 	done
 
 check-diff:
