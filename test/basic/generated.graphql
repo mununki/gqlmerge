@@ -2,8 +2,7 @@
 schema {
     query: Query
     mutation: Mutation
-    subscription: Subscription
-}
+    }
 
 """
 TEST : Directive 1

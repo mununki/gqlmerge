@@ -10,28 +10,25 @@ type MergedSchema struct {
 }
 
 func (ms *MergedSchema) WriteSchema(s *Schema) string {
-	ms.writeDescriptions(s.SchemaDefinitions[0].Descriptions, 0, true)
-	ms.buf.WriteString("schema {\n")
-	ms.addIndent(1)
-	if s.SchemaDefinitions[0].Query != nil {
-		ms.buf.WriteString("query: " + *s.SchemaDefinitions[0].Query + "\n")
-	} else {
-		ms.buf.WriteString("query: Query\n")
-	}
-	ms.addIndent(1)
-	if s.SchemaDefinitions[0].Mutation != nil {
-		ms.buf.WriteString("mutation: " + *s.SchemaDefinitions[0].Mutation + "\n")
-	} else {
-		ms.buf.WriteString("mutation: Mutation\n")
-	}
-	ms.addIndent(1)
-	if s.SchemaDefinitions[0].Subscription != nil {
-		ms.buf.WriteString("subscription: " + *s.SchemaDefinitions[0].Subscription + "\n")
-	} else {
-		ms.buf.WriteString("subscription: Subscription\n")
-	}
+	if (s.SchemaDefinitions[0].Query != nil) || (s.SchemaDefinitions[0].Mutation != nil) || (s.SchemaDefinitions[0].Subscription != nil) {
+		ms.writeDescriptions(s.SchemaDefinitions[0].Descriptions, 0, true)
+		ms.buf.WriteString("schema {\n")
+		ms.addIndent(1)
 
-	ms.buf.WriteString("}\n\n")
+		if s.SchemaDefinitions[0].Query != nil {
+			ms.buf.WriteString("query: " + *s.SchemaDefinitions[0].Query + "\n")
+		}
+		ms.addIndent(1)
+		if s.SchemaDefinitions[0].Mutation != nil {
+			ms.buf.WriteString("mutation: " + *s.SchemaDefinitions[0].Mutation + "\n")
+		}
+		ms.addIndent(1)
+		if s.SchemaDefinitions[0].Subscription != nil {
+			ms.buf.WriteString("subscription: " + *s.SchemaDefinitions[0].Subscription + "\n")
+		}
+
+		ms.buf.WriteString("}\n\n")
+	}
 
 	numOfDirs := len(s.DirectiveDefinitions)
 	if numOfDirs > 0 {
