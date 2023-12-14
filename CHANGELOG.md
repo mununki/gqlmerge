@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.12
+
+- Fix where the undefined operation type is generated https://github.com/mununki/gqlmerge/pull/47
+
 ## v0.2.11
 
 - Fixed mis-used rune `[` instead of tokLBracket https://github.com/mununki/gqlmerge/pull/41

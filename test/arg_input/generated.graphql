@@ -1,8 +1,6 @@
 schema {
-    query: Query
-    mutation: Mutation
-    subscription: Subscription
-}
+        mutation: Mutation
+    }
 
 type Mutation {
     createLogKo(input: CreateLogInput!): String!
