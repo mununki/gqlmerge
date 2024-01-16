@@ -349,9 +349,10 @@ func (s *Schema) Parse(p *Parser) {
 			t.Filename = p.lex.filename
 			t.Line = p.lex.line
 			t.Column = p.lex.col
+			t.Descriptions = p.bufString()
 			name, _ := p.lex.consumeIdent()
 			t.Name = name.String()
-			t.Descriptions = p.bufString()
+			t.Directives = p.parseDirectives()
 
 			next := p.lex.next()
 			switch next.typ {
@@ -364,6 +365,7 @@ func (s *Schema) Parse(p *Parser) {
 					name, _ = p.lex.consumeIdent()
 					t.ImplTypes = append(t.ImplTypes, name.String())
 				}
+				t.Directives = p.parseDirectives()
 				p.lex.consumeToken(tokLBrace)
 				fallthrough
 			case tokLBrace:

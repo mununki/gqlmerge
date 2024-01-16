@@ -1,0 +1,10 @@
+type Person @paint {
+  name: String
+  age: Int
+  picture: Url
+}
+
+type ExampleType implements Node @deprecated {
+  id: ID
+  oldField: String
+}
