@@ -74,6 +74,7 @@ func (ms *MergedSchema) WriteSchema(s *Schema) string {
 		if len(t.ImplTypes) > 0 {
 			ms.buf.WriteString(" implements " + strings.Join(t.ImplTypes, " & "))
 		}
+		ms.stitchDirectives(t.Directives)
 		ms.buf.WriteString(" {\n")
 		for _, p := range t.Fields {
 			ms.writeDescriptions(p.Descriptions, 1, false)

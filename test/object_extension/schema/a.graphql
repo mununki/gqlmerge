@@ -1,0 +1,6 @@
+type Person implements Node @talkable{
+  id: ID!
+  createTime: Time!
+  updateTime: Time!
+  name: String!
+}
