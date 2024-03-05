@@ -137,3 +137,78 @@ func mergeDescriptionsAndComments(a, b interface{}) {
 		}
 	}
 }
+
+func mergeDirectiveArgs(a, b []*DirectiveArg) []*DirectiveArg {
+	merged := make([]*DirectiveArg, len(a))
+	copy(merged, a)
+
+	for _, bArg := range b {
+		found := false
+		for i, mArg := range merged {
+			if mArg.Name == bArg.Name && compareValuesAndIsList(mArg, bArg) {
+				merged[i].Descriptions = mergeDescriptions(mArg.Descriptions, bArg.Descriptions)
+				found = true
+				break
+			}
+		}
+		if !found {
+			merged = append(merged, bArg)
+		}
+	}
+	return merged
+}
+
+func compareValuesAndIsList(a, b *DirectiveArg) bool {
+	if a.IsList != b.IsList {
+		return false
+	}
+	if len(a.Value) != len(b.Value) {
+		return false
+	}
+	for i := range a.Value {
+		if a.Value[i] != b.Value[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func mergeDescriptions(a, b *[]string) *[]string {
+	if a == nil && b == nil {
+		return nil
+	}
+	if a == nil {
+		return b
+	}
+	if b == nil {
+		return a
+	}
+	merged := make([]string, len(*a)+len(*b))
+	copy(merged, *a)
+	merged = append(merged, *b...)
+	return &merged
+}
+
+func mergeDirectives(a, b []*Directive) []*Directive {
+	directiveMap := make(map[string]*Directive)
+
+	for _, dir := range a {
+		directiveMap[dir.Name] = dir
+	}
+
+	for _, dirB := range b {
+		if dirA, exists := directiveMap[dirB.Name]; exists {
+			dirA.DirectiveArgs = mergeDirectiveArgs(dirA.DirectiveArgs, dirB.DirectiveArgs)
+			dirA.Descriptions = mergeDescriptions(dirA.Descriptions, dirB.Descriptions)
+		} else {
+			directiveMap[dirB.Name] = dirB
+		}
+	}
+
+	merged := make([]*Directive, 0, len(directiveMap))
+	for _, dir := range directiveMap {
+		merged = append(merged, dir)
+	}
+
+	return merged
+}

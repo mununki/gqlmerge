@@ -1,0 +1,11 @@
+type Person implements Node @talkable @walkable {
+    id: ID!
+    createTime: Time!
+    updateTime: Time!
+    name: String!
+    hasCar: Boolean!
+}
+
+
+
+

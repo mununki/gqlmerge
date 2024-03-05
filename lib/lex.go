@@ -51,6 +51,7 @@ const (
 	tokEnum                        // enum
 	tokScalar                      // scalar
 	tokUnion                       // union
+	tokExtend                      // extend
 	tokSchema                      // schema
 )
 
@@ -134,6 +135,8 @@ func (typ tokenType) String() string {
 		return "scalar"
 	case tokUnion:
 		return "union"
+	case tokExtend:
+		return "extend"
 	case tokSchema:
 		return "schema"
 	default:
@@ -328,6 +331,8 @@ func (l *lexer) next() *token {
 				return mkToken(tokScalar, "scalar")
 			case "union":
 				return mkToken(tokUnion, "union")
+			case "extend":
+				return mkToken(tokExtend, "extend")
 			case "schema":
 				return mkToken(tokSchema, "schema")
 			default:

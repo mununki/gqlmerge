@@ -38,3 +38,39 @@ func TestGetSchema(t *testing.T) {
 	}
 
 }
+
+func TestMergeDirectives(t *testing.T) {
+	str := make([]string, 0)
+	a := []*Directive{
+		{
+			Name:          "talkable",
+			DirectiveArgs: []*DirectiveArg{},
+			Descriptions:  &str,
+		},
+	}
+	b := []*Directive{
+		{
+			Name:          "talkable",
+			DirectiveArgs: []*DirectiveArg{},
+			Descriptions:  &str,
+		},
+	}
+	c := []*Directive{
+		{
+			Name:          "walkable",
+			DirectiveArgs: []*DirectiveArg{},
+			Descriptions:  &str,
+		},
+	}
+	ds := mergeDirectives(a, b)
+
+	if len(ds) == 0 {
+		t.Fatal("should be more than 0")
+	}
+
+	ds = mergeDirectives(a, c)
+
+	if len(ds) == 0 || len(ds) == 1 {
+		t.Fatal("should be more than 1")
+	}
+}

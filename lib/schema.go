@@ -60,6 +60,7 @@ func (sc *Schema) ReadSchema(path string) {
 }
 
 func (s *Schema) Parse(p *Parser) {
+	isExtended := false
 	for {
 		tok := p.lex.next()
 		if tok.typ == tokEOF {
@@ -132,6 +133,9 @@ func (s *Schema) Parse(p *Parser) {
 				d.Locations = ls
 			}
 			s.DirectiveDefinitions = append(s.DirectiveDefinitions, &d)
+
+		case tokExtend:
+			isExtended = true
 
 		case tokScalar:
 			c := Scalar{}
@@ -346,6 +350,8 @@ func (s *Schema) Parse(p *Parser) {
 
 		case tokType:
 			t := Type{}
+			t.Extend = isExtended
+			isExtended = false
 			t.Filename = p.lex.filename
 			t.Line = p.lex.line
 			t.Column = p.lex.col
@@ -357,6 +363,9 @@ func (s *Schema) Parse(p *Parser) {
 			next := p.lex.next()
 			switch next.typ {
 			case tokImplements:
+				if len(t.Directives) > 0 {
+					errorf(`%s:%d:%d: directives cann't be placed in front of implements`, p.lex.filename, p.lex.line, p.lex.col)
+				}
 				t.Impl = true
 				name, _ := p.lex.consumeIdent()
 				t.ImplTypes = append(t.ImplTypes, name.String())
@@ -533,22 +542,28 @@ func (s *Schema) MergeTypeName(wg *sync.WaitGroup) {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
 				if s.Types[i].Name == v.Name {
-					if reflect.DeepEqual(s.Types[i].ImplTypes, v.ImplTypes) && IsEqualWithoutDescriptions(s.Types[i].Directives, v.Directives) {
+					if v.Extend {
 						s.Types[i].Fields = mergeFields(s.Types[i].Fields, v.Fields)
-						mergeDescriptionsAndComments(s.Types[i].Directives, v.Directives)
+						s.Types[i].Directives = mergeDirectives(s.Types[i].Directives, v.Directives)
 						break
 					} else {
+						if reflect.DeepEqual(s.Types[i].ImplTypes, v.ImplTypes) && IsEqualWithoutDescriptions(s.Types[i].Directives, v.Directives) {
+							s.Types[i].Fields = mergeFields(s.Types[i].Fields, v.Fields)
+							mergeDescriptionsAndComments(s.Types[i].Directives, v.Directives)
+							break
+						} else {
 
-						rel1, err := GetRelPath(s.Types[i].Filename)
-						if err != nil {
-							panic(err)
-						}
-						rel2, err := GetRelPath(v.Filename)
-						if err != nil {
-							panic(err)
-						}
+							rel1, err := GetRelPath(s.Types[i].Filename)
+							if err != nil {
+								panic(err)
+							}
+							rel2, err := GetRelPath(v.Filename)
+							if err != nil {
+								panic(err)
+							}
 
-						errorf("Duplicated Types: %s(%s:%v:%v) and (%s:%v:%v)", s.Types[i].Name, *rel1, s.Types[i].Line, s.Types[i].Column, *rel2, v.Line, v.Column)
+							errorf("Duplicated Types: %s(%s:%v:%v) and (%s:%v:%v)", s.Types[i].Name, *rel1, s.Types[i].Line, s.Types[i].Column, *rel2, v.Line, v.Column)
+						}
 					}
 				}
 			}

@@ -60,6 +60,7 @@ type Type struct {
 	Fields       []*Field
 	Directives   []*Directive
 	Descriptions *[]string
+	Extend       bool
 }
 
 type Arg struct {
