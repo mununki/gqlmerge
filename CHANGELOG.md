@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.13
+
+- Support the object extension https://github.com/mununki/gqlmerge/pull/49
+
 ## v0.2.12
 
 - Fix where the undefined operation type is generated https://github.com/mununki/gqlmerge/pull/47
