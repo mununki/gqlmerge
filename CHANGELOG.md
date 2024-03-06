@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## v0.2.14 (unreleased)
+
 ## v0.2.13
 
 - Support the object extension https://github.com/mununki/gqlmerge/pull/49
