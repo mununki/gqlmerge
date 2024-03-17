@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## v0.2.14 (unreleased)
+## v0.2.14
+
+- Fix merging error in reverse order of object extension https://github.com/mununki/gqlmerge/pull/51
 
 ## v0.2.13
 
