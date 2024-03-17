@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"sync"
 )
 
@@ -538,6 +539,9 @@ func (s *Schema) MergeTypeName(wg *sync.WaitGroup) {
 	defer wg.Done()
 	j := 0
 	seen := make(map[string]struct{}, len(s.Types))
+	sort.SliceStable(s.Types, func(i, j int) bool {
+		return !s.Types[i].Extend && s.Types[j].Extend
+	})
 	for _, v := range s.Types {
 		if _, ok := seen[v.Name]; ok {
 			for i := 0; i < j; i++ {
