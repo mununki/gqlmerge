@@ -1,4 +1,4 @@
-type Person implements Node @talkable @walkable {
+type Person implements Node @walkable @talkable {
     id: ID!
     createTime: Time!
     updateTime: Time!

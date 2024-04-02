@@ -1,0 +1,22 @@
+type Query {
+    test1(X: Int = 20): Int
+    test2(X: Int! = 20): Int
+    test3(X: User = ADMIN): Int
+    test4(X: String! = "user"): Int
+    test5(X: String = "user" @deprecated): Int
+    test6(X: String = "user" @deprecated, Y: String! = "operator" @unique): Int
+    test7(X: [Int] = [20]): Int
+    test8(X: [Int] = [20, 30]): Int
+    test9(X: [User!]! = [ADMIN]): Int
+    test10(X: [String!] = ["user"]): Int
+    test11(X: [String] = ["user", "user1"] @deprecated): Int
+    test12(X: [String] = ["user", "user1"] @deprecated, Y: String! = "operator" @unique): Int
+}
+
+
+
+
+input User {
+    name: String! = "woonki"
+    nicknames: [String!]! = ["mununki", "arnold"]
+}

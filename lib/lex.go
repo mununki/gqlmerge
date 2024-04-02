@@ -489,3 +489,38 @@ func (l *lexer) consumeIdent(includings ...tokenType) (*token, *[]string) {
 		return tok, &comments
 	}
 }
+
+/*
+The `consumeIdent` function treats tokString as a comment.
+If you want to scan the tokString for ident, you can use the consumeIdentInclString function.
+
+e.g. scan "woonki" for ident here
+
+test(name: String = "woonki"): Bool
+*/
+func (l *lexer) consumeIdentInclString(includings ...tokenType) (*token, *[]string) {
+	comments := []string{}
+	includings = append(includings, tokString)
+
+	for {
+		tok := l.next()
+		if tok.typ == tokSingleLineComment || tok.typ == tokBlockString {
+			comments = append(comments, tok.String())
+			continue
+		}
+
+		isIncluded := false
+		for _, incl := range includings {
+			if tok.typ == incl {
+				isIncluded = true
+				break
+			}
+		}
+
+		if tok.typ != tokIdent && !isIncluded {
+			errorf(`%s:%d:%d: unexpected "%s"`, l.filename, l.line, l.col, tok.String())
+		}
+		l.skipSpace()
+		return tok, &comments
+	}
+}

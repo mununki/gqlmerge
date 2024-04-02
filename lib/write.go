@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"sort"
 	"strings"
 )
 
@@ -237,7 +238,17 @@ func (ms *MergedSchema) WriteSchema(s *Schema) string {
 			if p.IsList && !p.IsListNull {
 				ms.buf.WriteString("!")
 			}
-
+			if p.DefaultValues != nil {
+				if p.IsList {
+					ms.buf.WriteString(" = ")
+					ms.buf.WriteString("[")
+					ms.stitchDefaultValues(p.DefaultValues)
+					ms.buf.WriteString("]")
+				} else {
+					ms.buf.WriteString(" = ")
+					ms.stitchDefaultValues(p.DefaultValues)
+				}
+			}
 			ms.stitchDirectives(p.Directives)
 
 			ms.buf.WriteString("\n")
@@ -278,14 +289,23 @@ func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
 		if !a.IsListNull {
 			ms.buf.WriteString("!")
 		}
+		if a.DefaultValues != nil {
+			ms.buf.WriteString(" = ")
+			ms.buf.WriteString("[")
+			ms.stitchDefaultValues(a.DefaultValues)
+			ms.buf.WriteString("]")
+		}
+		ms.stitchDirectives(a.Directives)
 	} else {
 		ms.buf.WriteString(a.Type)
-		if a.TypeExt != nil {
-			ms.buf.WriteString(" = " + *a.TypeExt)
-		}
 		if !a.Null {
 			ms.buf.WriteString("!")
 		}
+		if a.DefaultValues != nil {
+			ms.buf.WriteString(" = ")
+			ms.stitchDefaultValues(a.DefaultValues)
+		}
+		ms.stitchDirectives(a.Directives)
 	}
 
 	if l <= 2 && i != l-1 {
@@ -297,6 +317,9 @@ func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
 }
 
 func (ms *MergedSchema) stitchDirectives(a []*Directive) {
+	sort.SliceStable(a, func(i, j int) bool {
+		return a[i].Name > a[j].Name
+	})
 	if l := len(a); l > 0 {
 		for _, a := range a {
 			ms.buf.WriteString(" @" + a.Name)
@@ -306,6 +329,17 @@ func (ms *MergedSchema) stitchDirectives(a []*Directive) {
 					ms.stitchDirectiveArgument(b, m, i)
 				}
 				ms.buf.WriteString(")")
+			}
+		}
+	}
+}
+
+func (ms *MergedSchema) stitchDefaultValues(a *[]string) {
+	if l := len(*a); l > 0 {
+		for i, v := range *a {
+			ms.buf.WriteString(v)
+			if i < l-1 {
+				ms.buf.WriteString(", ")
 			}
 		}
 	}

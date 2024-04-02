@@ -64,22 +64,42 @@ func (p *Parser) parseArgs() []*Arg {
 				} else {
 					arg.IsListNull = true
 				}
-			} else {
-				typ, _ := p.lex.consumeIdent()
-				arg.Type = typ.String()
 
 				if p.lex.peek() == '=' {
 					p.lex.consumeToken(tokEqual)
-					tex, _ := p.lex.consumeIdent()
-					te := tex.String()
-					arg.TypeExt = &te
+					defaultValues := []string{}
+					if p.lex.peek() == '[' {
+						p.lex.consumeIdent(tokLBracket)
+						for p.lex.peek() != ']' {
+							tex, _ := p.lex.consumeIdentInclString(tokNumber)
+							te := tex.String()
+							defaultValues = append(defaultValues, te)
+							if p.lex.peek() == ',' {
+								p.lex.consumeToken(tokComma)
+							}
+						}
+						p.lex.consumeIdent(tokRBracket)
+						arg.DefaultValues = &defaultValues
+					}
 				}
+			} else {
+				typ, _ := p.lex.consumeIdent()
+				arg.Type = typ.String()
 
 				if p.lex.peek() == '!' {
 					arg.Null = false
 					p.lex.consumeToken(tokBang)
 				} else {
 					arg.Null = true
+				}
+
+				if p.lex.peek() == '=' {
+					p.lex.consumeToken(tokEqual)
+					tex, _ := p.lex.consumeIdentInclString(tokNumber)
+					te := tex.String()
+					defaultValues := []string{}
+					defaultValues = append(defaultValues, te)
+					arg.DefaultValues = &defaultValues
 				}
 			}
 			arg.Directives = p.parseDirectives()

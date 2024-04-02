@@ -64,27 +64,28 @@ type Type struct {
 }
 
 type Arg struct {
-	Name         string
-	Type         string
-	TypeExt      *string // in case of enum e.g. admin(role: Role = ADMIN): Admin!
-	Null         bool
-	IsList       bool
-	IsListNull   bool
-	Directives   []*Directive
-	Descriptions *[]string
+	Name          string
+	Type          string
+	DefaultValues *[]string // in case of default values e.g. admin(role: Role = ADMIN): Admin!
+	Null          bool
+	IsList        bool
+	IsListNull    bool
+	Directives    []*Directive
+	Descriptions  *[]string
 }
 
 type Field struct {
 	BaseFileInfo
-	Name         string
-	Args         []*Arg
-	Type         string
-	Null         bool
-	IsList       bool
-	IsListNull   bool
-	Directives   []*Directive
-	Descriptions *[]string
-	Comments     *[]string
+	Name          string
+	Args          []*Arg
+	Type          string
+	Null          bool
+	IsList        bool
+	IsListNull    bool
+	DefaultValues *[]string
+	Directives    []*Directive
+	Descriptions  *[]string
+	Comments      *[]string
 }
 
 type Scalar struct {
