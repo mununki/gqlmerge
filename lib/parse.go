@@ -79,7 +79,7 @@ func (p *Parser) parseArgs() []*Arg {
 					p.lex.consumeToken(tokEqual)
 					tex, _ := p.lex.consumeIdentInclString(tokNumber)
 					te := tex.String()
-					arg.TypeExt = &te
+					arg.DefaultValue = &te
 				}
 			}
 			arg.Directives = p.parseDirectives()

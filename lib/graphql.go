@@ -66,7 +66,7 @@ type Type struct {
 type Arg struct {
 	Name         string
 	Type         string
-	TypeExt      *string // in case of default values e.g. admin(role: Role = ADMIN): Admin!
+	DefaultValue *string // in case of default values e.g. admin(role: Role = ADMIN): Admin!
 	Null         bool
 	IsList       bool
 	IsListNull   bool

@@ -286,8 +286,8 @@ func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
 		if !a.Null {
 			ms.buf.WriteString("!")
 		}
-		if a.TypeExt != nil {
-			ms.buf.WriteString(" = " + *a.TypeExt)
+		if a.DefaultValue != nil {
+			ms.buf.WriteString(" = " + *a.DefaultValue)
 		}
 		ms.stitchDirectives(a.Directives)
 	}
