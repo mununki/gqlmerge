@@ -6,3 +6,7 @@ type Query {
   test3(X: String = "user" @deprecated): Int
   test3(X: String = "user" @deprecated, Y: String! = "operator" @unique): Int
 }
+
+input User {
+  name: String! = "woonki"
+}
