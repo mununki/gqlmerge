@@ -64,6 +64,24 @@ func (p *Parser) parseArgs() []*Arg {
 				} else {
 					arg.IsListNull = true
 				}
+
+				if p.lex.peek() == '=' {
+					p.lex.consumeToken(tokEqual)
+					defaultValues := []string{}
+					for p.lex.peek() == '[' {
+						p.lex.consumeIdent(tokLBracket)
+						for p.lex.peek() != ']' {
+							tex, _ := p.lex.consumeIdentInclString(tokNumber)
+							te := tex.String()
+							defaultValues = append(defaultValues, te)
+							if p.lex.peek() == ',' {
+								p.lex.consumeToken(tokComma)
+							}
+						}
+						p.lex.consumeIdent(tokRBracket)
+						arg.DefaultValues = &defaultValues
+					}
+				}
 			} else {
 				typ, _ := p.lex.consumeIdent()
 				arg.Type = typ.String()
@@ -79,7 +97,9 @@ func (p *Parser) parseArgs() []*Arg {
 					p.lex.consumeToken(tokEqual)
 					tex, _ := p.lex.consumeIdentInclString(tokNumber)
 					te := tex.String()
-					arg.DefaultValue = &te
+					defaultValues := []string{}
+					defaultValues = append(defaultValues, te)
+					arg.DefaultValues = &defaultValues
 				}
 			}
 			arg.Directives = p.parseDirectives()

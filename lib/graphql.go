@@ -64,14 +64,14 @@ type Type struct {
 }
 
 type Arg struct {
-	Name         string
-	Type         string
-	DefaultValue *string // in case of default values e.g. admin(role: Role = ADMIN): Admin!
-	Null         bool
-	IsList       bool
-	IsListNull   bool
-	Directives   []*Directive
-	Descriptions *[]string
+	Name          string
+	Type          string
+	DefaultValues *[]string // in case of default values e.g. admin(role: Role = ADMIN): Admin!
+	Null          bool
+	IsList        bool
+	IsListNull    bool
+	Directives    []*Directive
+	Descriptions  *[]string
 }
 
 type Field struct {

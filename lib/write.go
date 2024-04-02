@@ -281,13 +281,21 @@ func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
 		if !a.IsListNull {
 			ms.buf.WriteString("!")
 		}
+		if a.DefaultValues != nil {
+			ms.buf.WriteString(" = ")
+			ms.buf.WriteString("[")
+			ms.stitchDefaultValues(a.DefaultValues)
+			ms.buf.WriteString("]")
+		}
+		ms.stitchDirectives(a.Directives)
 	} else {
 		ms.buf.WriteString(a.Type)
 		if !a.Null {
 			ms.buf.WriteString("!")
 		}
-		if a.DefaultValue != nil {
-			ms.buf.WriteString(" = " + *a.DefaultValue)
+		if a.DefaultValues != nil {
+			ms.buf.WriteString(" = ")
+			ms.stitchDefaultValues(a.DefaultValues)
 		}
 		ms.stitchDirectives(a.Directives)
 	}
@@ -310,6 +318,17 @@ func (ms *MergedSchema) stitchDirectives(a []*Directive) {
 					ms.stitchDirectiveArgument(b, m, i)
 				}
 				ms.buf.WriteString(")")
+			}
+		}
+	}
+}
+
+func (ms *MergedSchema) stitchDefaultValues(a *[]string) {
+	if l := len(*a); l > 0 {
+		for i, v := range *a {
+			ms.buf.WriteString(v)
+			if i < l-1 {
+				ms.buf.WriteString(", ")
 			}
 		}
 	}
