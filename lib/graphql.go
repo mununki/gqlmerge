@@ -76,16 +76,16 @@ type Arg struct {
 
 type Field struct {
 	BaseFileInfo
-	Name         string
-	Args         []*Arg
-	Type         string
-	Null         bool
-	IsList       bool
-	IsListNull   bool
-	DefaultValue *string
-	Directives   []*Directive
-	Descriptions *[]string
-	Comments     *[]string
+	Name          string
+	Args          []*Arg
+	Type          string
+	Null          bool
+	IsList        bool
+	IsListNull    bool
+	DefaultValues *[]string
+	Directives    []*Directive
+	Descriptions  *[]string
+	Comments      *[]string
 }
 
 type Scalar struct {

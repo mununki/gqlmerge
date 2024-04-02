@@ -237,10 +237,17 @@ func (ms *MergedSchema) WriteSchema(s *Schema) string {
 			if p.IsList && !p.IsListNull {
 				ms.buf.WriteString("!")
 			}
-			if p.DefaultValue != nil {
-				ms.buf.WriteString(" = " + *p.DefaultValue)
+			if p.DefaultValues != nil {
+				if p.IsList {
+					ms.buf.WriteString(" = ")
+					ms.buf.WriteString("[")
+					ms.stitchDefaultValues(p.DefaultValues)
+					ms.buf.WriteString("]")
+				} else {
+					ms.buf.WriteString(" = ")
+					ms.stitchDefaultValues(p.DefaultValues)
+				}
 			}
-
 			ms.stitchDirectives(p.Directives)
 
 			ms.buf.WriteString("\n")

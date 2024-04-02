@@ -319,6 +319,23 @@ func (s *Schema) Parse(p *Parser) {
 					} else {
 						fd.IsListNull = true
 					}
+					if p.lex.peek() == '=' {
+						p.lex.consumeToken(tokEqual)
+						defaultValues := []string{}
+						for p.lex.peek() == '[' {
+							p.lex.consumeIdent(tokLBracket)
+							for p.lex.peek() != ']' {
+								tex, _ := p.lex.consumeIdentInclString(tokNumber)
+								te := tex.String()
+								defaultValues = append(defaultValues, te)
+								if p.lex.peek() == ',' {
+									p.lex.consumeToken(tokComma)
+								}
+							}
+							p.lex.consumeIdent(tokRBracket)
+							fd.DefaultValues = &defaultValues
+						}
+					}
 				} else {
 					fd.IsList = false
 					fd.IsListNull = false
@@ -335,7 +352,9 @@ func (s *Schema) Parse(p *Parser) {
 						p.lex.consumeToken(tokEqual)
 						tex, _ := p.lex.consumeIdentInclString(tokNumber)
 						te := tex.String()
-						fd.DefaultValue = &te
+						defaultValues := []string{}
+						defaultValues = append(defaultValues, te)
+						fd.DefaultValues = &defaultValues
 					}
 				}
 
