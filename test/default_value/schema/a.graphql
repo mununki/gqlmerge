@@ -15,4 +15,5 @@ type Query {
 
 input User {
   name: String! = "woonki"
+  nicknames: [String!]! = ["mununki", "arnold"]
 }
