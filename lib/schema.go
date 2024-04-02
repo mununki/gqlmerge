@@ -322,7 +322,7 @@ func (s *Schema) Parse(p *Parser) {
 					if p.lex.peek() == '=' {
 						p.lex.consumeToken(tokEqual)
 						defaultValues := []string{}
-						for p.lex.peek() == '[' {
+						if p.lex.peek() == '[' {
 							p.lex.consumeIdent(tokLBracket)
 							for p.lex.peek() != ']' {
 								tex, _ := p.lex.consumeIdentInclString(tokNumber)
