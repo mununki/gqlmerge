@@ -82,6 +82,7 @@ type Field struct {
 	Null         bool
 	IsList       bool
 	IsListNull   bool
+	DefaultValue *string
 	Directives   []*Directive
 	Descriptions *[]string
 	Comments     *[]string

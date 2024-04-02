@@ -10,3 +10,6 @@ type Query {
 
 
 
+input User {
+    name: String! = "woonki"
+}

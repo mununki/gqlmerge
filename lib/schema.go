@@ -330,6 +330,13 @@ func (s *Schema) Parse(p *Parser) {
 					} else {
 						fd.Null = true
 					}
+
+					if p.lex.peek() == '=' {
+						p.lex.consumeToken(tokEqual)
+						tex, _ := p.lex.consumeIdentInclString(tokNumber)
+						te := tex.String()
+						fd.DefaultValue = &te
+					}
 				}
 
 				fd.Directives = p.parseDirectives()

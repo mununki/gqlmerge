@@ -237,6 +237,9 @@ func (ms *MergedSchema) WriteSchema(s *Schema) string {
 			if p.IsList && !p.IsListNull {
 				ms.buf.WriteString("!")
 			}
+			if p.DefaultValue != nil {
+				ms.buf.WriteString(" = " + *p.DefaultValue)
+			}
 
 			ms.stitchDirectives(p.Directives)
 
