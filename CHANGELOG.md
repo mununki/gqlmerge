@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## v0.2.15 (unreleased)
+## v0.2.15
+
+- Fix parse and write the default values in the input value definition https://github.com/mununki/gqlmerge/pull/53
 
 ## v0.2.14
 
