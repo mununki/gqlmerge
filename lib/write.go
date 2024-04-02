@@ -280,12 +280,13 @@ func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
 		}
 	} else {
 		ms.buf.WriteString(a.Type)
-		if a.TypeExt != nil {
-			ms.buf.WriteString(" = " + *a.TypeExt)
-		}
 		if !a.Null {
 			ms.buf.WriteString("!")
 		}
+		if a.TypeExt != nil {
+			ms.buf.WriteString(" = " + *a.TypeExt)
+		}
+		ms.stitchDirectives(a.Directives)
 	}
 
 	if l <= 2 && i != l-1 {

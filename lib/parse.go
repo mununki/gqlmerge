@@ -68,18 +68,18 @@ func (p *Parser) parseArgs() []*Arg {
 				typ, _ := p.lex.consumeIdent()
 				arg.Type = typ.String()
 
-				if p.lex.peek() == '=' {
-					p.lex.consumeToken(tokEqual)
-					tex, _ := p.lex.consumeIdent()
-					te := tex.String()
-					arg.TypeExt = &te
-				}
-
 				if p.lex.peek() == '!' {
 					arg.Null = false
 					p.lex.consumeToken(tokBang)
 				} else {
 					arg.Null = true
+				}
+
+				if p.lex.peek() == '=' {
+					p.lex.consumeToken(tokEqual)
+					tex, _ := p.lex.consumeIdentInclString(tokNumber)
+					te := tex.String()
+					arg.TypeExt = &te
 				}
 			}
 			arg.Directives = p.parseDirectives()
