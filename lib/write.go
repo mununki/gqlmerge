@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"sort"
 	"strings"
 )
 
@@ -316,6 +317,9 @@ func (ms *MergedSchema) stitchArgument(a *Arg, l int, i int) {
 }
 
 func (ms *MergedSchema) stitchDirectives(a []*Directive) {
+	sort.SliceStable(a, func(i, j int) bool {
+		return a[i].Name > a[j].Name
+	})
 	if l := len(a); l > 0 {
 		for _, a := range a {
 			ms.buf.WriteString(" @" + a.Name)
