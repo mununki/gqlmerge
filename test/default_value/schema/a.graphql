@@ -1,0 +1,5 @@
+type Query {
+  test(X: Int = 20): Int
+  test1(X: Int = ADMIN): Int
+  test2(X: String = "user"): Int
+}
