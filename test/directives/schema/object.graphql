@@ -8,3 +8,18 @@ type ExampleType implements Node @deprecated {
   id: ID
   oldField: String
 }
+
+directive @access(
+  requiredProjectId: Boolean
+  subject: String
+  ability: PermissionAbility
+) on FIELD_DEFINITION
+
+type Mutation {
+  createProjectRole(title: String!): ProjectRole!
+    @access(
+      requiredProjectId: true
+      subject: "Project"
+      ability: DELETE
+    )
+}

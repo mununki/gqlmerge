@@ -153,6 +153,7 @@ func (p *Parser) parseDirectives() []*Directive {
 				if p.lex.peek() == ',' {
 					p.lex.consumeToken(tokComma)
 				}
+				p.lex.skipSpace()
 			}
 			p.lex.consumeToken(tokRParen)
 		}
