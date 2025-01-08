@@ -1,3 +1,10 @@
+directive @access(
+        requiredProjectId: Boolean
+        subject: String
+        ability: PermissionAbility
+    ) on FIELD_DEFINITION
+
+
 type Person @paint {
     name: String
     age: Int
@@ -7,6 +14,12 @@ type Person @paint {
 type ExampleType implements Node @deprecated {
     id: ID
     oldField: String
+}
+
+type Mutation {
+    createProjectRole(title: String!): ProjectRole! @access(        requiredProjectId: true
+        subject: "Project"
+        ability: DELETE)
 }
 
 
