@@ -2,6 +2,8 @@
 
 ## v0.2.16(unreleased)
 
+- Fix parse directive with space https://github.com/mununki/gqlmerge/pull/56
+
 ## v0.2.15
 
 - Fix parse and write the default values in the input value definition https://github.com/mununki/gqlmerge/pull/53
