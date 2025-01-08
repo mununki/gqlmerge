@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## v0.2.17(unreleased)
+
 ## v0.2.16
 
 - Fix parse directive with space https://github.com/mununki/gqlmerge/pull/56
