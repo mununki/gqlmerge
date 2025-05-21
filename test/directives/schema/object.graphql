@@ -23,3 +23,8 @@ type Mutation {
       ability: DELETE
     )
 }
+
+input CompanyMetricOrder @goModel(model: "backend/ent.CompanyMetricOrder") {
+  direction: OrderDirection! = ASC
+  field: CompanyMetricOrderField!
+}
