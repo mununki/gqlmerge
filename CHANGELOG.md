@@ -2,6 +2,8 @@
 
 ## v0.2.17(unreleased)
 
+- Add directive support to input https://github.com/mununki/gqlmerge/pull/58
+
 ## v0.2.16
 
 - Fix parse directive with space https://github.com/mununki/gqlmerge/pull/56
