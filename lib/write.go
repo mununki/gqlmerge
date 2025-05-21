@@ -219,7 +219,9 @@ func (ms *MergedSchema) WriteSchema(s *Schema) string {
 
 	for j, i := range s.Inputs {
 		ms.writeDescriptions(i.Descriptions, 0, true)
-		ms.buf.WriteString("input " + i.Name + " {\n")
+		ms.buf.WriteString("input " + i.Name)
+		ms.stitchDirectives(i.Directives)
+		ms.buf.WriteString(" {\n")
 
 		for _, p := range i.Fields {
 			ms.writeDescriptions(p.Descriptions, 1, true)

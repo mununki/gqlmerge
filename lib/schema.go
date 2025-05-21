@@ -288,6 +288,7 @@ func (s *Schema) Parse(p *Parser) {
 			name, _ := p.lex.consumeIdent()
 			i.Name = name.String()
 			i.Descriptions = p.bufString()
+			i.Directives = p.parseDirectives()
 
 			p.lex.consumeToken(tokLBrace)
 

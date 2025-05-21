@@ -130,6 +130,7 @@ type Union struct {
 type Input struct {
 	BaseFileInfo
 	Name         string
-	Fields       []*Field
 	Descriptions *[]string
+	Directives   []*Directive
+	Fields       []*Field
 }
