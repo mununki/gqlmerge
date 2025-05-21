@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.2.17(unreleased)
+## v0.2.17
 
 - Add directive support to input https://github.com/mununki/gqlmerge/pull/58
 
